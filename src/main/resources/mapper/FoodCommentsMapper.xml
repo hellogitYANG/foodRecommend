@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.foodrecommend.mapper.FoodCommentsMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.foodrecommend.beans.FoodComments">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="foodSkuId" column="food_sku_id" jdbcType="VARCHAR"/>
+            <result property="foodName" column="food_name" jdbcType="VARCHAR"/>
+            <result property="foodTaste" column="food_taste" jdbcType="VARCHAR"/>
+            <result property="merchantId" column="merchant_id" jdbcType="VARCHAR"/>
+            <result property="merchantPhone" column="merchant_phone" jdbcType="VARCHAR"/>
+            <result property="commentContent" column="comment_content" jdbcType="VARCHAR"/>
+            <result property="commentStar" column="comment_star" jdbcType="INTEGER"/>
+            <result property="isBrush" column="is_brush" jdbcType="INTEGER"/>
+            <result property="xy" column="xy" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_id,user_id,
+        food_sku_id,food_name,food_taste,
+        merchant_id,merchant_phone,comment_content,
+        comment_star,is_brush,xy,
+        create_time,update_time
+    </sql>
+</mapper>

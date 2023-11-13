@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.foodrecommend.mapper.OrdersMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.foodrecommend.beans.Orders">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userPhone" column="user_phone" jdbcType="VARCHAR"/>
+            <result property="foodSkuId" column="food_sku_id" jdbcType="VARCHAR"/>
+            <result property="foodName" column="food_name" jdbcType="VARCHAR"/>
+            <result property="foodTaste" column="food_taste" jdbcType="VARCHAR"/>
+            <result property="merchantId" column="merchant_id" jdbcType="VARCHAR"/>
+            <result property="merchantPhone" column="merchant_phone" jdbcType="VARCHAR"/>
+            <result property="isBrush" column="is_brush" jdbcType="INTEGER"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,user_phone,
+        food_sku_id,food_name,food_taste,
+        merchant_id,merchant_phone,is_brush,
+        address,create_time,update_time
+    </sql>
+</mapper>

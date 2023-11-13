@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.foodrecommend.mapper.MerchantMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.foodrecommend.beans.Merchant">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="phone" column="phone" jdbcType="VARCHAR"/>
+            <result property="isBrush" column="is_brush" jdbcType="INTEGER"/>
+            <result property="star" column="star" jdbcType="INTEGER"/>
+            <result property="merchantImg" column="merchant_img" jdbcType="VARCHAR"/>
+            <result property="salesNum" column="sales_num" jdbcType="INTEGER"/>
+            <result property="xy" column="xy" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_name,phone,
+        is_brush,star,merchant_img,
+        sales_num,xy,create_time,
+        update_time
+    </sql>
+</mapper>
