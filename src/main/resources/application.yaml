@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://47.107.125.16:3306/foodRecomment?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: tuijian123456
+    hikari:
+      idle-timeout: 10000
+      max-lifetime: 30000
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  #  设置时区，不然前端查出来时间慢八小时
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+#  boot版本太高，为了swagger不报错用这个
+#mybatis:
+#  mapper-locations: classpath:mappers/*Mapper.xml
+#  type-aliases-package: com.example.message2.beans
+
+mybatis-plus:
+  mapper-locations: classpath:mappers/*Mapper.xml
+  type-aliases-package: com.example.foodrecommend.beans
+server:
+  port: 8080
+
+
+
+
+
+
+
