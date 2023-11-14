@@ -2,8 +2,8 @@ package com.example.foodrecommend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.Report;
-import com.example.foodrecommend.service.ReportService;
 import com.example.foodrecommend.mapper.ReportMapper;
+import com.example.foodrecommend.service.ReportService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 * @createDate 2023-11-13 00:14:57
 */
 @Service
-public class ReportServiceImpl extends ServiceImpl<ReportMapper, Report>
-    implements ReportService{
+public class ReportServiceImpl extends ServiceImpl<ReportMapper, Report> implements ReportService{
 
 }
 

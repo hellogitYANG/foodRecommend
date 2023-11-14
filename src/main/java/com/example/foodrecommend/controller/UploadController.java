@@ -32,7 +32,7 @@ public class UploadController {
         String newFileName = UUID.randomUUID().toString() + "." + imgSuffix;
 
         // 将图片数据写入本地文件
-        // TODO 此处的路径为硬编码
+        // TODO 此处的路径先写硬编码
         FileOutputStream out = new FileOutputStream("/upload/images/" + newFileName);
         out.write(bytes);
         out.close();
