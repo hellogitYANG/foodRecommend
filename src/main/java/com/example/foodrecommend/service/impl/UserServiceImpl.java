@@ -1,5 +1,6 @@
 package com.example.foodrecommend.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.User;
@@ -61,8 +62,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         if (user != null) {
             String token = getToken(user);
-
-            return success(token,user);
+            Map<String, Object> usermap = BeanUtil.beanToMap(user);
+            usermap.put("token",token);
+            return success(usermap);
         } else {
             //如果没有就查出手机号并创建用户
             //查手机号
@@ -83,7 +85,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             int insert = userMapper.insert(newuser);
             if (insert > 0) {
                 token = getToken(newuser);
-                return success(token,newuser);
+                Map<String, Object> usermap = BeanUtil.beanToMap(user);
+                usermap.put("token",token);
+                return success(usermap);
             }
         }
         return failure(1001, "登录错误");
