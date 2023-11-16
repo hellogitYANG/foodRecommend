@@ -30,7 +30,6 @@ public class DiscountController  {
      * 服务对象
      */
     @Resource
-
     private DiscountService discountService;
 
     /**

@@ -63,6 +63,8 @@ public class FoodSku implements Serializable {
      */
     @TableField(value = "update_time")
     private Date updateTime;
+    @TableField(value = "merchant_id")
+    private String merchantId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

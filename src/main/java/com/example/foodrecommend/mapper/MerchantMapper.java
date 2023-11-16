@@ -11,6 +11,7 @@ import org.mapstruct.Mapper;
 * @createDate 2023-11-13 00:14:57
 * @Entity generator.beans.Merchant
 */
+@Mapper
 public interface MerchantMapper extends BaseMapper<Merchant> {
     //根据商家用户名查商家信息
     Merchant selectMerchant(@Param("username") String username);
