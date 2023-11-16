@@ -15,9 +15,10 @@ spring:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
 #  boot版本太高，为了swagger不报错用这个
+
 #mybatis:
 #  mapper-locations: classpath:mappers/*Mapper.xml
-#  type-aliases-package: com.example.message2.beans
+#  type-aliases-package: com.example.foodrecommend.beans
 
 mybatis-plus:
   mapper-locations: classpath:mappers/*Mapper.xml

@@ -2,6 +2,8 @@ package com.example.foodrecommend.mapper;
 
 import com.example.foodrecommend.beans.Merchant;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.mapstruct.Mapper;
 
 /**
 * @author 86176
@@ -10,6 +12,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity generator.beans.Merchant
 */
 public interface MerchantMapper extends BaseMapper<Merchant> {
+    //根据商家用户名查商家信息
+    Merchant selectMerchant(@Param("username") String username);
 
 }
 

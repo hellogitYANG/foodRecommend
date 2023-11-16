@@ -23,4 +23,9 @@
         sales_num,xy,create_time,
         update_time
     </sql>
+
+    <select id="selectMerchant" resultType = "com.example.foodrecommend.beans.Merchant">
+        SELECT * FROM merchant WHERE user_name = #{username}
+    </select>
+
 </mapper>

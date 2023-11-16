@@ -9,5 +9,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2023-11-13 00:14:57
 */
 public interface MerchantService extends IService<Merchant> {
-
+    //根据商家用户名查商家信息
+    public Merchant selectMerchant(String username);
 }

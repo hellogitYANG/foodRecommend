@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.service.MerchantService;
 import com.example.foodrecommend.mapper.MerchantMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
 * @author 86176
@@ -15,6 +18,14 @@ import org.springframework.stereotype.Service;
 public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant>
     implements MerchantService{
 
+    @Resource
+    MerchantMapper merchantMapper;
+
+    @Override
+    public Merchant selectMerchant(String username) {
+        Merchant merchant = merchantMapper.selectMerchant(username);
+        return merchant;
+    }
 }
 
 
