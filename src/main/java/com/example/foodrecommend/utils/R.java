@@ -22,6 +22,10 @@ public class R<T> {
     public static <T> R<T> success(T data) {
         return new R<>(200, "Success", data);
     }
+    // 静态方法，用于创建成功的 R 对象
+    public static <T> R<T> success(String message,T data) {
+        return new R<>(200, message, data);
+    }
 
     // 静态方法，用于创建失败的 R 对象
     public static <T> R<T> failure(int code, String message) {

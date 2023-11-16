@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.service.UserService;
 import com.example.foodrecommend.utils.R;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,31 @@ public class UserController  {
     @Resource
     private UserService userService;
 
+
+    @ApiOperation("登录")
+    @GetMapping("/login")
+    public R login(String js_code,String code) {
+        try {
+            return userService.login(js_code,code);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @ApiOperation("校验token是否过期接口")
+    @GetMapping("/check")
+    public R userTokencheck(@RequestHeader("token") String token){
+        //如果能进来成功了
+        return  success(null);
+    }
+
+    @ApiOperation("通过token获取用户信息接口")
+    @GetMapping("/getUserInfoByToken")
+    public R getUserInfoByToken(@RequestHeader("token") String token){
+        //如果能进来成功了
+        return  success(userService.getUserInfoByToken(token));
+    }
     /**
      * 分页查询所有数据
      *

@@ -6,7 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 
@@ -14,7 +17,19 @@ import lombok.Data;
  */
 @TableName(value ="user")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements Serializable {
+    public User(String openId, String userName, String phone, String foodStats, Integer authority, Integer isBan, String collectFoodSku) {
+        this.openId = openId;
+        this.userName = userName;
+        this.phone = phone;
+        this.foodStats = foodStats;
+        this.authority = authority;
+        this.isBan = isBan;
+        this.collectFoodSku = collectFoodSku;
+    }
+
     /**
      * 用户表ID
      */
