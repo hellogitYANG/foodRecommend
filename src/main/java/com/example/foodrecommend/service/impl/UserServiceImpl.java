@@ -1,6 +1,7 @@
 package com.example.foodrecommend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.User;
@@ -81,7 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             ResponseEntity<Map> response2 = restTemplate.postForEntity(phoneurl, httpEntity, Map.class);
             Map<String, Object> phoneInfo = (Map<String, Object>) response2.getBody().get("phone_info");
             //新增信息
-            User newuser = new User(openid, "傻逼", "123456", "特殊口味", 0, 0, String.valueOf(phoneInfo.get("phoneNumber")));
+            User newuser = new User(openid, "傻逼", String.valueOf(phoneInfo.get("phoneNumber")), null, 0, 0, null);
             int insert = userMapper.insert(newuser);
             if (insert > 0) {
                 token = getToken(newuser);
@@ -107,9 +108,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         map.put("authority", user.getAuthority());
         map.put("isBan", user.getIsBan());
         map.put("phone", user.getPhone());
-        map.put("foodStats", user.getFoodStats());
+        map.put("foodStats", user.getFoodStats()); // 将Map转换为JSON字符串,不然取出强转回map会错
         map.put("collectFoodSku", user.getCollectFoodSku());
 
+        System.out.println(map);
         String token = builder.setSubject("token")                     //主题，就是token中携带的数据
                 .setIssuedAt(new Date())                            //设置token的生成时间
                 .setId(user.getOpenId())                                //设置用户id为token  id
