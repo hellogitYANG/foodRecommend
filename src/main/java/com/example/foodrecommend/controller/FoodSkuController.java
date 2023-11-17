@@ -5,10 +5,12 @@ package com.example.foodrecommend.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.FoodSku;
+import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.service.FoodSkuService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import net.sf.jsqlparser.statement.select.Select;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -44,6 +46,12 @@ public class FoodSkuController  {
     @GetMapping
     public R selectAll(Page<FoodSku> page, FoodSku foodSku) {
         return success(this.foodSkuService.page(page, new QueryWrapper<>(foodSku)));
+    }
+
+    @ApiOperation("根据商家ID分页查询菜品信息")
+    @GetMapping("/selectFoodByMerchantID/{merchantId}")
+    public R selectFoodByMerchantID(Page<FoodSku> page,@PathVariable String merchantId) {
+        return success(this.foodSkuService.page(page,new QueryWrapper<FoodSku>().eq("merchant_id",merchantId)));
     }
 
 
