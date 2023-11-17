@@ -4,6 +4,7 @@ package com.example.foodrecommend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.Orders;
 import com.example.foodrecommend.service.OrdersService;
 import com.example.foodrecommend.utils.R;
@@ -44,6 +45,12 @@ public class OrdersController  {
     @GetMapping
     public R selectAll(Page<Orders> page, Orders orders) {
         return success(this.ordersService.page(page, new QueryWrapper<>(orders)));
+    }
+
+    @ApiOperation("根据用户openid获取用户订单信息接口")
+    @GetMapping("/selectOrderByUserOpenId/{openId}")
+    public R selectOrderByUserOpenId(Page<Orders> page, @PathVariable String openId) {
+        return success(this.ordersService.page(page,new QueryWrapper<Orders>().eq("user_id",openId)));
     }
 
     /**

@@ -20,18 +20,19 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 #  boot版本太高，为了swagger不报错用这个
+
 #mybatis:
 #  mapper-locations: classpath:mappers/*Mapper.xml
-#  type-aliases-package: com.example.message2.beans
+#  type-aliases-package: com.example.foodrecommend.beans
 
 mybatis-plus:
   mapper-locations: classpath:mappers/*Mapper.xml
   type-aliases-package: com.example.foodrecommend.beans
+
 server:
   port: 8080
 
-
-
-
+qiNiuYun:
+  link: http://s4803lpy1.hd-bkt.clouddn.com/
 
 

@@ -41,11 +41,31 @@ public class MerchantController  {
      * @param merchant 查询实体
      * @return 所有数据
      */
-    @ApiOperation("分页查询折扣信息")
+    @ApiOperation("分页查询商家信息")
     @GetMapping
     public R selectAll(Page<Merchant> page, Merchant merchant) {
         return success(this.merchantService.page(page, new QueryWrapper<>(merchant)));
     }
+
+
+    @ApiOperation("获取所有商家接口")
+    @GetMapping("/seletAllMerchant")
+    public R selectAllText(){
+        List<Merchant> list = merchantService.list();
+        return success(list);
+    }
+
+    @ApiOperation("获取单个商家根据商家名字")
+    @GetMapping("/selectMerchantByUsername/{username}")
+    public R selectMerchantByUsername(@PathVariable String username){
+        Merchant merchant = merchantService.selectMerchant(username);
+        //mybaitisplus根据查询条件查询一个数据
+//        QueryWrapper<Merchant> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("user_name",username);
+//        Merchant one = merchantService.getOne(queryWrapper);
+        return success(merchant);
+    }
+
 
     /**
      * 通过主键查询单条数据

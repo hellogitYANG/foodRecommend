@@ -80,7 +80,7 @@ public class DiscountController  {
     public R update(@RequestBody Discount discount) {
         return success(this.discountService.updateById(discount));
     }
-
+ 
     /**
      * 删除数据
      *
