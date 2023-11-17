@@ -28,11 +28,11 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:mappers/*Mapper.xml
   type-aliases-package: com.example.foodrecommend.beans
+
 server:
   port: 8080
 
-
-
-
+qiNiuYun:
+  link: http://s4803lpy1.hd-bkt.clouddn.com/
 
 

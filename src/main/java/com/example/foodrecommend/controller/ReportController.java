@@ -8,7 +8,6 @@ import com.example.foodrecommend.service.ReportService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,39 +33,43 @@ public class ReportController {
     @Resource
     private MerchantService merchantService;
 
-
     /**
-     * 新增数据
+     * 新增举报记录
      *
      * @param report 实体对象
      * @return 新增结果
      */
-    @ApiOperation("添加举报记录")
-    @PostMapping
+    @ApiOperation("新增举报记录")
+    @PostMapping("/insert")
     public R insert(@RequestBody Report report) {
         boolean save = this.reportService.save(report);
         return success(save);
     }
 
     /**
-     * 人工审核
+     * 查看一条举报记录的详细情况
      *
      * @param id 举报表id
      * @return 举报表对象
      */
-    @ApiOperation("管理员审核窗口")
-    @GetMapping("/audit/{id}")
-    public R auditWindow(@ApiParam(value = "举报表 ID", required = true) @PathVariable String id) {
+    @ApiOperation("查看举报记录")
+    @GetMapping("/check/{id}")
+    public R check(@PathVariable String id) {
         // 查询举报表对象
         Report report = this.reportService.getById(id);
         return success(report);
     }
 
+    /**
+     * 管理员进行审核，提交要扣除的分数
+     *
+     * @param id 举报表id
+     * @param star 扣除的分数
+     * @return 成功或失败
+     */
     @ApiOperation("管理员审核结果")
-    @PutMapping("/punishment")
-    public R auditResults(
-            @ApiParam(value = "举报表 ID", required = true) @RequestParam String id,
-            @ApiParam(value = "扣除的分数", required = true) @RequestParam Integer star) {
+    @GetMapping("/audit/{id}/{star}")
+    public R audit(@PathVariable String id, @PathVariable Integer star) {
         // 查询举报表对象
         Report report = this.reportService.getById(id);
         // 对商家进行惩罚
@@ -76,13 +79,16 @@ public class ReportController {
         Integer currentMerchantStar = merchant.getStar();
         // 扣除分数
         if (currentMerchantStar < star){
-            return failure(400, "扣除分数比商家当前分数高");
+            return failure(500, "扣除分数比商家当前分数高");
         }
         merchant.setStar(currentMerchantStar - star);
         // 更新数据库
-        merchantService.updateById(merchant);
-        // TODO 2.罚款
-        return success(merchant);
+        boolean update = merchantService.updateById(merchant);
+        if (!update) {
+            return failure(500, "提交失败");
+        }
+        // TODO 2.罚款 -- 未完成
+        return success("提交成功");
     }
 
 }
