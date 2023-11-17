@@ -1,11 +1,16 @@
 package com.example.foodrecommend.beans;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 /**
@@ -86,6 +91,9 @@ public class Orders implements Serializable {
      */
     @TableField(value = "update_time")
     private Date updateTime;
+
+    @TableField(value = "mark")
+    private Integer mark;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
