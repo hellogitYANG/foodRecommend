@@ -66,8 +66,9 @@ public class OrdersController  {
      */
     @ApiOperation("新增单条数据")
     @PostMapping
-    public R insert(@RequestBody Orders orders) {
-        return success(this.ordersService.save(orders));
+    public R insert(@RequestBody Orders orders, @RequestHeader("token") String token) {
+        int i = this.ordersService.insertOrder(orders, token);
+        return success(null);
     }
 
     /**
