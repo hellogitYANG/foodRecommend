@@ -9,5 +9,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2023-11-13 00:14:57
 */
 public interface FoodCommentsService extends IService<FoodComments> {
-
+    public int InsertByFullOrder(FoodComments foodComments,String token);
 }
