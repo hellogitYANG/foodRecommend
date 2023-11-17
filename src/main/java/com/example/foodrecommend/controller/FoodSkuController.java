@@ -1,22 +1,21 @@
 package com.example.foodrecommend.controller;
 
 
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.FoodSku;
-import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.service.FoodSkuService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import net.sf.jsqlparser.statement.select.Select;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
+import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
 
 /**
@@ -26,9 +25,9 @@ import static com.example.foodrecommend.utils.R.success;
  * @since 2023-11-13 00:25:53
  */
 @RestController
-@Api(value = "菜品表",tags = "菜品表")
+@Api(value = "菜品表", tags = "菜品表")
 @RequestMapping("foodSku")
-public class FoodSkuController  {
+public class FoodSkuController {
     /**
      * 服务对象
      */
@@ -38,7 +37,7 @@ public class FoodSkuController  {
     /**
      * 分页查询所有数据
      *
-     * @param page 分页对象
+     * @param page    分页对象
      * @param foodSku 查询实体
      * @return 所有数据
      */
@@ -50,10 +49,26 @@ public class FoodSkuController  {
 
     @ApiOperation("根据商家ID分页查询菜品信息")
     @GetMapping("/selectFoodByMerchantID/{merchantId}")
-    public R selectFoodByMerchantID(Page<FoodSku> page,@PathVariable String merchantId) {
-        return success(this.foodSkuService.page(page,new QueryWrapper<FoodSku>().eq("merchant_id",merchantId)));
+    public R selectFoodByMerchantID(Page<FoodSku> page, @PathVariable String merchantId) {
+        return success(this.foodSkuService.page(page, new QueryWrapper<FoodSku>().eq("merchant_id", merchantId)));
     }
 
+    /**
+     * 通过销量和评分推荐菜品
+     *
+     * @param n 推荐菜品的数量（非必须的，默认值为10）
+     * @return 推荐的菜品列表
+     */
+    @ApiOperation("通过销量和评分推荐菜品")
+    @ApiImplicitParam(name = "n", value = "推荐菜品的数量", required = false, defaultValue = "10")
+    @GetMapping("/recommend/{n}")
+    public R recommend(@PathVariable Integer n) {
+        List<FoodSku> foodSkus = foodSkuService.recommendBySalesAndScore(n);
+        if (foodSkus == null){
+            return failure(500, "推荐失败");
+        }
+        return success(foodSkus);
+    }
 
     /**
      * 通过主键查询单条数据

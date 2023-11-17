@@ -1,9 +1,7 @@
 package com.example.foodrecommend.controller;
 
 
-import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.beans.Report;
-import com.example.foodrecommend.service.MerchantService;
 import com.example.foodrecommend.service.ReportService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
@@ -30,8 +28,7 @@ public class ReportController {
      */
     @Resource
     private ReportService reportService;
-    @Resource
-    private MerchantService merchantService;
+
 
     /**
      * 新增举报记录
@@ -65,30 +62,16 @@ public class ReportController {
      *
      * @param id 举报表id
      * @param star 扣除的分数
-     * @return 成功或失败
+     * @return 成功/失败
      */
     @ApiOperation("管理员审核结果")
     @GetMapping("/audit/{id}/{star}")
     public R audit(@PathVariable String id, @PathVariable Integer star) {
-        // 查询举报表对象
-        Report report = this.reportService.getById(id);
-        // 对商家进行惩罚
-        // 1.降分
-        Merchant merchant = merchantService.getById(report.getMerchantIdEd());
-        // 当前商家分数
-        Integer currentMerchantStar = merchant.getStar();
-        // 扣除分数
-        if (currentMerchantStar < star){
-            return failure(500, "扣除分数比商家当前分数高");
+        Boolean reviewResult = this.reportService.adminToReview(id, star);
+        if (!reviewResult){
+            return failure(500,"审核失败");
         }
-        merchant.setStar(currentMerchantStar - star);
-        // 更新数据库
-        boolean update = merchantService.updateById(merchant);
-        if (!update) {
-            return failure(500, "提交失败");
-        }
-        // TODO 2.罚款 -- 未完成
-        return success("提交成功");
+        return success("审核成功");
     }
 
 }

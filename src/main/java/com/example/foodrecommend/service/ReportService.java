@@ -10,5 +10,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ReportService extends IService<Report> {
 
+    /**
+     * 管理员进行审核，提交要扣除的分数
+     *
+     * @param id 举报表id
+     * @param star 扣除的分数
+     * @return 成功/失败
+     */
+    Boolean adminToReview(String id, Integer star);
 
 }
