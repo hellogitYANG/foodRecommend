@@ -17,7 +17,7 @@ import java.util.List;
 public interface FoodCommentsMapper extends BaseMapper<FoodComments> {
 
     /**
-     * 查询同一用户给同一评星的订单数大于10的商家
+     * 查询同一用户给同一评星的订单数大于n的商家
      *
      * @return 订单信息
      */
@@ -25,8 +25,8 @@ public interface FoodCommentsMapper extends BaseMapper<FoodComments> {
             "FROM food_comments " +
             "WHERE comment_star IS NOT NULL " +
             "GROUP BY merchant_id, user_id, comment_star " +
-            "HAVING COUNT(DISTINCT id) > 10")
-    List<FoodComments> findMerchantsWithMoreThan10Orders();
+            "HAVING COUNT(DISTINCT id) > #{n}")
+    List<FoodComments> findMerchantsWithMoreThan10Orders(int n);
 }
 
 

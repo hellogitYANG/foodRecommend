@@ -29,7 +29,6 @@ public class taskReview {
     @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
     public void checkUserCommentFrequency() {
         List<User> suspiciousUsers = userBansService.commentFrequencyCommentBlock();
-        if (suspiciousUsers != null) log.info("发现可疑用户：{}", suspiciousUsers);
     }
 
     /**
@@ -38,8 +37,6 @@ public class taskReview {
     @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
     public void checkMerchantCommentFrequency() {
         List<Merchant> suspiciousMerchants = userBansService.commentFrequencyAndUserSimilarityCommentBlock();
-        if (suspiciousMerchants != null) log.error("发现可疑商家，请及时处理：{}", suspiciousMerchants);
-
     }
 
     /**
@@ -48,8 +45,6 @@ public class taskReview {
     @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
     public void checkForUnblockedUsers() {
         List<User> userList = userBansService.unlockingUsers();
-        if (userList != null) log.info("解封用户列表：{}", userList);
-
     }
 
 }

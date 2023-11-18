@@ -21,7 +21,7 @@ public class UserBansController {
      *
      * @return 可疑用户列表
      */
-    @GetMapping("/checkForAbnormalUsers")
+    @GetMapping("/commentFrequencyCommentBlock")
     public R checkCommentFrequencyAndBlock() {
         return R.success(userBansService.commentFrequencyCommentBlock());
     }
@@ -31,7 +31,7 @@ public class UserBansController {
      *
      * @return 可疑商家列表
      */
-    @GetMapping("/checkForAbnormalMerchants")
+    @GetMapping("/commentFrequencyAndUserSimilarityCommentBlock")
     public R queryCommentFrequencyAndUserSimilarity() {
         return R.success(userBansService.commentFrequencyAndUserSimilarityCommentBlock());
     }
@@ -41,7 +41,7 @@ public class UserBansController {
      *
      * @return 解禁的用户对象列表
      */
-    @GetMapping("/unlockUsers")
+    @GetMapping("/unlockingUsers")
     public R unlockUsers() {
         return R.success(userBansService.unlockingUsers());
     }

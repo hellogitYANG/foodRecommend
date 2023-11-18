@@ -11,12 +11,11 @@ import com.example.foodrecommend.mapper.MerchantMapper;
 import com.example.foodrecommend.mapper.UserBansMapper;
 import com.example.foodrecommend.mapper.UserMapper;
 import com.example.foodrecommend.service.UserBansService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
  * @description 针对表【user_bans】的数据库操作Service实现
  */
 @Service
+@Slf4j
 public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> implements UserBansService {
     @Autowired
     private FoodCommentsMapper foodCommentsMapper;
@@ -37,9 +37,11 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
     private MerchantMapper merchantMapper;
 
     // 好评次数阈值，超过这个值就会被BAN
-    private static final int GOOD_COMMENT_THRESHOLD = 8;
-    // 认为好评的值
-    private static final int GOOD_COMMENT_VALUE = 8;
+    private static final int GOOD_COMMENT_THRESHOLD = 5;
+    // 同一评星数
+    private static final int NUMBER_OF_SAME_RATING_STARS = 5;
+    // 认为是好评的值
+    private static final int GOOD_COMMENT_VALUE = 7;
     // 刷单禁言的天数
     private static final int NUMBER_OF_DAYS_OF_BAN_ON_BRUSHING_ORDERS = 30;
     // 长期封禁天数
@@ -49,20 +51,23 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
     // 未封禁状态
     private static final int NULL_BAN_STATUS = 0;
     // 定义好评率过高的阈值
-    private static final double MAX_POSITIVE_REVIEW_RATE = 0.95;
+    private static final double MAX_POSITIVE_REVIEW_RATE = 0.98;
     // 初始封禁次数
     private static final int NUMBER_OF_INITIAL_LOCKDOWNS = 1;
+    // 商家评论数，用来判断是否超过这个次数，如果没超过就不用计算了
+    private static final int CURRENT_NUMBER_OF_MERCHANT_COMMENTS = 50;
+    // private static final int CURRENT_NUMBER_OF_MERCHANT_COMMENTS = 5; // 测试
 
     /**
      * 检查是否有用户针对单一商家好评频率过高并对其进行封禁
+     * 惩罚条件：1小时内 单一用户对单一商家的好评数超过 5 次
      *
      * @return 可疑用户列表
      */
     public List<User> commentFrequencyCommentBlock() {
-        // 从数据库获取评价数据（1天内）
-        // 1.计算前一天到当前时间的日期值
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        LocalDateTime startOfDay = LocalDateTime.of(yesterday, LocalTime.MIN);
+        // 从数据库获取评价数据（1小时内）
+        // 1.计算日期值
+        LocalDateTime startOfDay = LocalDateTime.now().minusHours(1);
         LocalDateTime endOfDay = LocalDateTime.now();
         // 2.查询当日的评价数据
         List<FoodComments> foodComments = foodCommentsMapper.selectList(new LambdaQueryWrapper<FoodComments>()
@@ -88,6 +93,8 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
                     .eq(FoodComments::getMerchantId, merchantId)
                     .eq(FoodComments::getUserId, userId)
                     .gt(FoodComments::getCommentStar, GOOD_COMMENT_VALUE));
+            // 获取用户对象
+            User user = userMapper.selectById(userId);
             // 判断好评次数是否大于阈值
             if (goodCommentCount > GOOD_COMMENT_THRESHOLD) { // 大于
                 // 判断是否存在user_bans表中
@@ -97,10 +104,15 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
                 LocalDateTime banEndTime = banStartTime.plusDays(NUMBER_OF_DAYS_OF_BAN_ON_BRUSHING_ORDERS);
                 // 如果用户已在user_bans表中，那么更新其封禁信息
                 if (userBans != null) {
+                    // 判断用户是否已经被封禁了，如果已经被封禁则不进行操作，防止重复封禁
+                    if (user.getIsBan() == BAN_STAtUS) {
+                        continue;
+                    }
+                    // 计算封禁次数
                     int timesBanned = userBans.getTimesBanned() + 1;
-                    if (timesBanned >= 3) {
-                        // 如果该用户的封禁次数已经大于等于3，将封禁5年
-                        LocalDateTime fiveYearsLater = banStartTime.plusYears(LONG_TERM_BAN_DAYS);
+                    // 如果该用户的封禁次数已经大于3，将封禁5年
+                    if (timesBanned > 3) {
+                        LocalDateTime fiveYearsLater = banStartTime.plusDays(LONG_TERM_BAN_DAYS);
                         userBans.setBanDays(LONG_TERM_BAN_DAYS);
                         userBans.setBanEndTime(fiveYearsLater);
                     } else {
@@ -121,39 +133,44 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
                     userBansMapper.insert(userBans); // 将数据添加到user_bans表中
                 }
                 // 更新用户表的ban属性为 1（封禁）
-                User user = userMapper.selectById(userId);
                 user.setIsBan(BAN_STAtUS);
                 userMapper.updateById(user);
 
                 suspiciousUsers.add(user);
             }
         }
+        // 打印处理结果
+        if (!suspiciousUsers.isEmpty()) log.info("发现可疑用户：{}", suspiciousUsers);
         return suspiciousUsers;
     }
 
     /**
      * 检查是否有商家好评频率过高且用户相似度过高，提示管理员进行处理
+     * 惩罚条件：1小时内 评论数超过50次、好评率超过98% 并且 同一用户给同一评星的订单数大于5的商家
      *
      * @return 可疑商家列表
      */
     public List<Merchant> commentFrequencyAndUserSimilarityCommentBlock() {
         // 查询全部商家
         List<Merchant> merchants = merchantMapper.selectList(null);
-        // 计算前一天到当前时间的日期值
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        LocalDateTime startOfDay = LocalDateTime.of(yesterday, LocalTime.MIN);
+        // 计算日期值
+        LocalDateTime startOfDay = LocalDateTime.now().minusHours(1);
         LocalDateTime endOfDay = LocalDateTime.now();
         // 1.得到好评率高的商家
         List<Merchant> highGoodRateMerchants = new ArrayList<>();
         for (Merchant merchant : merchants) {
+            // 获取商家的评价数
+            Long commentsCount = foodCommentsMapper.selectCount(new LambdaQueryWrapper<FoodComments>()
+                    .eq(FoodComments::getMerchantId, merchant.getId())
+                    .between(FoodComments::getCreateTime, startOfDay, endOfDay));
+            // 判断商家评价数是否超过50次，如果没超过就不计算了
+            if (commentsCount < CURRENT_NUMBER_OF_MERCHANT_COMMENTS) {
+                continue;
+            }
             // 获取商家的好评数（前一天到当前时间的）
             Long goodCommentCount = foodCommentsMapper.selectCount(new LambdaQueryWrapper<FoodComments>()
                     .eq(FoodComments::getMerchantId, merchant.getId())
                     .gt(FoodComments::getCommentStar, GOOD_COMMENT_VALUE)
-                    .between(FoodComments::getCreateTime, startOfDay, endOfDay));
-            // 获取商家的评价数（前一天到当前时间的）
-            Long commentsCount = foodCommentsMapper.selectCount(new LambdaQueryWrapper<FoodComments>()
-                    .eq(FoodComments::getMerchantId, merchant.getId())
                     .between(FoodComments::getCreateTime, startOfDay, endOfDay));
             // 计算好评率
             double goodCommentRate = (goodCommentCount * 1.0) / commentsCount;
@@ -165,20 +182,25 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
         }
 
         // 2. 查询用户相似度高的商家
-        List<FoodComments> highSimilarityMerchants = foodCommentsMapper.findMerchantsWithMoreThan10Orders();
-
+        List<FoodComments> merchantsWithProblematicUserComments = foodCommentsMapper.findMerchantsWithMoreThan10Orders(NUMBER_OF_SAME_RATING_STARS);
+        List<Merchant> highSimilarityMerchants = new ArrayList<>();
+        merchantsWithProblematicUserComments.forEach(merchant -> {
+            highSimilarityMerchants.add(merchantMapper.selectById(merchant.getMerchantId()));
+        });
         // 3. 取交集,获取同时满足两条条件的商家
         List<Merchant> suspiciousMerchants = highGoodRateMerchants.stream()
                 .filter(highSimilarityMerchants::contains)
                 .collect(Collectors.toList());
-
+        // 打印处理结果
+        if (!suspiciousMerchants.isEmpty()) log.error("发现可疑商家，请及时处理：{}", suspiciousMerchants);
         return suspiciousMerchants;
     }
 
     /**
      * 解禁用户
+     * 解禁条件：当前时间 大于 解禁时间
      *
-     * @return  解禁的用户对象
+     * @return 解禁的用户对象
      */
     public List<User> unlockingUsers() {
         // 查询封禁表中已过期的记录
@@ -188,17 +210,17 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
         List<User> userList = new ArrayList<>();
         for (UserBans userBans : userBansList) {
             User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                    .eq(User::getId, userBans.getId())
+                    .eq(User::getId, userBans.getUserId())
                     .eq(User::getIsBan, BAN_STAtUS));
             if (user != null) {
                 // 根据用户id更新用户表把封禁状态改为未封禁
                 user.setIsBan(NULL_BAN_STATUS);
                 userMapper.updateById(user);
-
                 userList.add(user);
             }
         }
-        // 返回解禁的用户
+        // 打印处理结果
+        if (!userList.isEmpty()) log.info("解封用户列表：{}", userList);
         return userList;
     }
 }
