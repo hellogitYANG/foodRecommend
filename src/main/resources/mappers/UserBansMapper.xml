@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.foodrecommend.mapper.UserBansMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.foodrecommend.beans.UserBans">
+        <!--封禁表ID-->
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <!--用户ID-->
+        <result column="user_id" property="userId" jdbcType="VARCHAR"/>
+        <!--封禁天数-->
+        <result column="ban_days" property="banDays" jdbcType="INTEGER"/>
+        <!--封禁开始时间-->
+        <result column="ban_start_time" property="banStartTime" jdbcType="TIMESTAMP"/>
+        <!--封禁结束时间-->
+        <result column="ban_end_time" property="banEndTime" jdbcType="TIMESTAMP"/>
+        <!--被封禁的次数-->
+        <result column="times_banned" property="timesBanned" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, ban_days, ban_start_time, ban_end_time, times_banned
+    </sql>
+</mapper>

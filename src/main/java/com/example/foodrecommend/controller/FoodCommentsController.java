@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
+import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
 
 /**
@@ -63,11 +64,17 @@ public class FoodCommentsController  {
      * @param foodComments 实体对象
      * @return 新增结果
      */
-    @ApiOperation("新增单条数据")
+    @ApiOperation("通过订单ID添加单条数据,需要order_id 、comment_content、comment_star")
     @PostMapping
-    public R insert(@RequestBody FoodComments foodComments) {
-        return success(this.foodCommentsService.save(foodComments));
+    public R insert(@RequestBody FoodComments foodComments,@RequestHeader String token) {
+        int i = foodCommentsService.InsertByFullOrder(foodComments,token);
+        if (i>0){
+            return success(null);
+        }
+        return failure(1001,"添加失败");
     }
+
+
 
     /**
      * 修改数据

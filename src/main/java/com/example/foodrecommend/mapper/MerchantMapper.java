@@ -15,7 +15,6 @@ import org.mapstruct.Mapper;
 public interface MerchantMapper extends BaseMapper<Merchant> {
     //根据商家用户名查商家信息
     Merchant selectMerchant(@Param("username") String username);
-
 }
 
 
