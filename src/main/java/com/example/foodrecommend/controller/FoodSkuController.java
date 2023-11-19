@@ -6,7 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.Merchant;
+import com.example.foodrecommend.beans.User;
+import com.example.foodrecommend.interceptor.CheckTokenInterceptor;
 import com.example.foodrecommend.service.FoodSkuService;
+import com.example.foodrecommend.utils.GetUserInfoByToken;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,6 +58,13 @@ public class FoodSkuController  {
     }
 
 
+    @ApiOperation("获取猜你想吃")
+    @GetMapping("/getYouWantEat")
+    public R selectFoodByMerchantID() {
+        String token = CheckTokenInterceptor.getToken();
+        User user = GetUserInfoByToken.parseToken(token);
+        return success(this.foodSkuService.getYouWantEat(user.getOpenId()));
+    }
     /**
      * 通过主键查询单条数据
      *

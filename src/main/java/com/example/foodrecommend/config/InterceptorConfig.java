@@ -13,6 +13,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Autowired
     private CheckTokenInterceptor checkTokenInterceptor;
 
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(checkTokenInterceptor)

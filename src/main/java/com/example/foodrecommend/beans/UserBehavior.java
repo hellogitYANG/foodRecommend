@@ -1,46 +1,58 @@
 package com.example.foodrecommend.beans;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 
- * @TableName food_stats_dictionary
+ * @TableName user_behavior
  */
-@TableName(value ="food_stats_dictionary")
+@TableName(value ="user_behavior")
 @Data
-public class FoodStatsDictionary implements Serializable {
+public class UserBehavior implements Serializable {
     /**
-     * 口味表ID
+     * 
      */
-    @TableId(value = "id",type = IdType.AUTO)
-    private String id;
+    @TableId(value = "id")
+    private Integer id;
 
     /**
-     * 口味名称
+     * 用户openId
      */
-    @TableField(value = "name")
-    private String name;
+    @TableField(value = "user_id")
+    private String userId;
 
     /**
-     * 属性级别
+     * 行为：浏览:0
      */
-    @TableField(value = "stats_level")
-    private String statsLevel;
+    @TableField(value = "behavior")
+    private Integer behavior;
 
     /**
-     * 创建时间
+     * 
+     */
+    @TableField(value = "food_sku_id")
+    private String foodSkuId;
+
+    /**
+     * 
+     */
+    @TableField(value = "merchant_id")
+    private String merchantId;
+
+    /**
+     * 
      */
     @TableField(value = "create_time")
     private Date createTime;
 
     /**
-     * 更新时间
+     * 
      */
     @TableField(value = "update_time")
     private Date updateTime;

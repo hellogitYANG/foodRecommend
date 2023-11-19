@@ -108,7 +108,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         map.put("authority", user.getAuthority());
         map.put("isBan", user.getIsBan());
         map.put("phone", user.getPhone());
-        map.put("foodStats", user.getFoodStats()); // 将Map转换为JSON字符串,不然取出强转回map会错
+        map.put("foodStats", user.getFoodStats());
         map.put("collectFoodSku", user.getCollectFoodSku());
 
         System.out.println(map);

@@ -105,11 +105,14 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
             User newUser = new User();
             newUser.setFoodStats(JSONUtil.toJsonStr(finalFoodTaste));
-            userMapper.update(newUser,wrapper);
-
+            int update = userMapper.update(newUser, wrapper);
+            return update;
         }
         return 0;
     }
+
+
+
     private static String findMostFrequentValue(String values) {
         // 将逗号分隔的值拆分成数组
         String[] valueArray = values.split(",");

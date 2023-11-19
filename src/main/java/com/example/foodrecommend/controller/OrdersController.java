@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
+import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
 
 /**
@@ -75,7 +76,12 @@ public class OrdersController  {
     @PostMapping
     public R insert(@RequestBody Orders orders, @RequestHeader("token") String token) {
         int i = this.ordersService.insertOrder(orders, token);
-        return success(null);
+        if (i>0){
+            return success(null);
+        }else {
+            return failure(1001,"添加订单失败");
+        }
+
     }
 
     /**

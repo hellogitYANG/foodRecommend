@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,4 +73,25 @@ public class FoodSku implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    //SET去重
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FoodSku foodSku = (FoodSku) o;
+        return Objects.equals(id, foodSku.id) &&
+                Objects.equals(name, foodSku.name) &&
+                Objects.equals(foodImg, foodSku.foodImg) &&
+                Objects.equals(salesNum, foodSku.salesNum) &&
+                Objects.equals(money, foodSku.money) &&
+                Objects.equals(createTime, foodSku.createTime) &&
+                Objects.equals(updateTime, foodSku.updateTime) &&
+                Objects.equals(merchantId, foodSku.merchantId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, foodImg, salesNum, money, createTime, updateTime, merchantId);
+    }
 }
