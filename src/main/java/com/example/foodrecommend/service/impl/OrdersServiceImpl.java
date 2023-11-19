@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -38,7 +39,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     UserMapper userMapper;
     @Autowired
     FoodSkuMapper foodSkuMapper;
-    @Autowired
+    @Resource
     MerchantMapper merchantMapper;
     @Override
     @Transactional

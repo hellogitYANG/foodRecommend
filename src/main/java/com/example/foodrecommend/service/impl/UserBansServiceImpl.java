@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
     private UserBansMapper userBansMapper;
     @Autowired
     private UserMapper userMapper;
-    @Autowired
+    @Resource
     private MerchantMapper merchantMapper;
 
     // 好评次数阈值，超过这个值就会被BAN

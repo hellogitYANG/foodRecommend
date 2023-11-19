@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.*;
@@ -17,11 +16,10 @@ import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.dto.FoodSkuDto;
 import com.example.foodrecommend.mapper.FoodSkuMapper;
 import com.example.foodrecommend.mapper.MerchantMapper;
-import com.example.foodrecommend.service.FoodSkuService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,7 +48,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     FoodCommentsMapper foodCommentsMapper;
     @Autowired
     FoodStatsDictionaryMapper foodStatsDictionaryMapper;
-    @Autowired
+    @Resource
     private MerchantMapper merchantMapper;
 
     // 设置时间范围
