@@ -26,7 +26,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User implements Serializable {
-    public User(String openId, String userName, String phone, String foodStats, Integer authority, Integer isBan, String collectFoodSku) {
+    public User(String openId, String userName, String phone, String foodStats, Integer authority, Integer isBan, String collectFoodSku, String phoneLocation) {
         this.openId = openId;
         this.userName = userName;
         this.phone = phone;
@@ -34,6 +34,7 @@ public class User implements Serializable {
         this.authority = authority;
         this.isBan = isBan;
         this.collectFoodSku = collectFoodSku;
+        this.phoneLocation=phoneLocation;
     }
 
     /**
@@ -95,6 +96,9 @@ public class User implements Serializable {
      */
     @TableField(value = "update_time")
     private Date updateTime;
+
+    @TableField(value = "phone_location")
+    private String phoneLocation;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

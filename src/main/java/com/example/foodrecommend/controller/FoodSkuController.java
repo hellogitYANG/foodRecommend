@@ -81,6 +81,14 @@ public class FoodSkuController {
         User user = GetUserInfoByToken.parseToken(token);
         return success(this.foodSkuService.getYouWantEat(user.getOpenId()));
     }
+
+    @ApiOperation("获取家乡美食")
+    @GetMapping("/getLocationFood")
+    public R getLocationFood() {
+        String token = CheckTokenInterceptor.getToken();
+        User user = GetUserInfoByToken.parseToken(token);
+        return success(this.foodSkuService.getLocationFood(user.getOpenId()));
+    }
     /**
      * 通过主键查询单条数据
      *

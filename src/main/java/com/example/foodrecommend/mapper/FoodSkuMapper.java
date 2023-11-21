@@ -4,6 +4,8 @@ import com.example.foodrecommend.beans.FoodSku;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
 * @author 86176
 * @description 针对表【food_sku】的数据库操作Mapper
@@ -12,6 +14,7 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface FoodSkuMapper extends BaseMapper<FoodSku> {
+    List<FoodSku> selectSalesNumByOneMerchant();
 
 }
 

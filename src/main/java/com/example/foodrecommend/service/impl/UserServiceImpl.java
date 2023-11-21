@@ -9,6 +9,7 @@ import com.example.foodrecommend.dingshi.SendMessage;
 import com.example.foodrecommend.mapper.ReportMapper;
 import com.example.foodrecommend.service.UserService;
 import com.example.foodrecommend.mapper.UserMapper;
+import com.example.foodrecommend.utils.GetPhoneInfo;
 import com.example.foodrecommend.utils.GetUserInfoByToken;
 import com.example.foodrecommend.utils.R;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -82,11 +83,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             ResponseEntity<Map> response2 = restTemplate.postForEntity(phoneurl, httpEntity, Map.class);
             Map<String, Object> phoneInfo = (Map<String, Object>) response2.getBody().get("phone_info");
             //新增信息
-            User newuser = new User(openid, "傻逼", String.valueOf(phoneInfo.get("phoneNumber")), null, 0, 0, null);
+            User newuser = new User(openid, "傻逼", String.valueOf(phoneInfo.get("phoneNumber")), null, 0, 0, null, GetPhoneInfo.getMobileLocation(String.valueOf(phoneInfo.get("phoneNumber"))));
             int insert = userMapper.insert(newuser);
             if (insert > 0) {
                 token = getToken(newuser);
-                Map<String, Object> usermap = BeanUtil.beanToMap(user);
+                Map<String, Object> usermap = BeanUtil.beanToMap(newuser);
                 usermap.put("token",token);
                 return success(usermap);
             }

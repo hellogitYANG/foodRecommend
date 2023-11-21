@@ -24,4 +24,6 @@ public interface FoodSkuService extends IService<FoodSku> {
      * @return 推荐的菜品列表
      */
     List<FoodSku> recommendBySalesAndScore(Integer n);
+
+    List<FoodSku>  getLocationFood(String openId);
 }

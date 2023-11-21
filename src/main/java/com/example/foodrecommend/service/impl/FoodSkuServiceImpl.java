@@ -133,7 +133,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             }
         }
 
-        // 假设对推荐结果进行排序，这里省略排序逻辑
+        // 对推荐结果进行排序
         Collections.sort(recommendedFood, Comparator.comparingDouble(food -> {
             // 获取每个食品的相似度
             Map<String, String> foodMap = JSONUtil.toBean(food.getFoodStats(), Map.class);
@@ -189,8 +189,12 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         return foodSkuList;
     }
     public static List<FoodSku> randomCollectFoodSku(String openId,BaseMapper<User> userMapper, BaseMapper<FoodSku> foodSkuMapper){
+
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
         String collectFoodSku = user.getCollectFoodSku();
+        if(collectFoodSku==null){
+            return new ArrayList<FoodSku>();
+        }
         // 使用逗号分割字符串为数组
         String[] foodSkuArray = collectFoodSku.split(",");
         // 将数组转换为 List
@@ -248,6 +252,33 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         }
         // 返回推荐的菜品列表
         return recommendedFoodSkus;
+    }
+
+    @Override
+    public List<FoodSku> getLocationFood(String openId) {
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id",openId));
+        //每家只能推一个
+        List<FoodSku> foodSkus = foodSkuMapper.selectList(new QueryWrapper<FoodSku>().orderByDesc("sales_num"));
+
+        ArrayList<FoodSku> locationFood = new ArrayList<>();
+        String[] split = user.getPhoneLocation().split(",");
+
+        A:for (int i = 0; i < foodSkus.size(); i++) {
+            if (foodSkus.get(i).getFoodStats().contains(split[0]) || foodSkus.get(i).getFoodStats().contains(split[1])){
+                //如果已经有此家店铺的食品，直接跳过此食品
+                for (FoodSku foodSku : locationFood) {
+                    if (foodSku.getMerchantId().equals(foodSkus.get(i).getMerchantId())){
+                        continue A;
+                    }
+                }
+                locationFood.add(foodSkus.get(i));
+            }
+            if (i==4){
+                break;
+            }
+        }
+        return locationFood;
+
     }
 }
 

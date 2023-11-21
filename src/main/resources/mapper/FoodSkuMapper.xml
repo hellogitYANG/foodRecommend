@@ -20,4 +20,15 @@
         food_img,sales_num,money,
         create_time,update_time
     </sql>
+
+    <select id="selectSalesNumByOneMerchant" resultType="com.example.foodrecommend.beans.FoodSku">
+        SELECT f.id, f.name, f.food_stats, f.food_img, f.sales_num, f.money, f.create_time, f.update_time, f.merchant_id
+        FROM food_sku f
+         JOIN (
+            SELECT merchant_id, MAX(sales_num) AS max_sales_num
+            FROM food_sku
+            GROUP BY merchant_id
+        ) max_sales ON f.merchant_id = max_sales.merchant_id AND f.sales_num = max_sales.max_sales_num
+        ORDER BY f.sales_num DESC;
+    </select>
 </mapper>
