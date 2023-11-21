@@ -40,7 +40,7 @@ public class ReportController {
      * @return 提交结果
      */
     @ApiOperation("处理管理员提交的审核结果")
-    @PostMapping
+    @PostMapping("/submitAuditResult")
     public R submitAuditResult(@RequestBody Map map) {
         return success(this.reportService.handleAuditAndDeductScore(map));
     }
