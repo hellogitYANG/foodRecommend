@@ -1,19 +1,27 @@
 package com.example.foodrecommend.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.beans.MerchantRecharge;
+import com.example.foodrecommend.mapper.MerchantMapper;
 import com.example.foodrecommend.mapper.MerchantRechargeMapper;
 import com.example.foodrecommend.service.MerchantRechargeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MerchantRechargeServiceImpl extends ServiceImpl<MerchantRechargeMapper, MerchantRecharge> implements MerchantRechargeService {
 
     @Autowired
     private MerchantRechargeMapper merchantRechargeMapper;
+    @Autowired
+    private MerchantMapper merchantMapper;
 
-    // 增加权重值
+    // 增加推荐权重值
     private static final Integer INCREASE_RECOMMENDATION_WEIGHT = 1;
     // 购买广告位
     private static final Integer PURCHASE_ADVERTISING_SPACE = 2;
@@ -21,17 +29,46 @@ public class MerchantRechargeServiceImpl extends ServiceImpl<MerchantRechargeMap
     private static final Integer OPTIMIZE_SEARCH = 3;
 
     /**
-     * 商家进行充值
+     * 查询购买了 增加推荐权重值 的商家
      *
-     * @param merchantRecharge 商家充值的信息，应该有商家id，充值类型，充值金额，有效时间
-     *                         充值类型，1：增加推荐权重，2：购买广告位，3：优化搜索
-     * @return
+     * @return 商家列表
      */
     @Override
-    public String recharge(MerchantRecharge merchantRecharge) {
-        // 判断充值类型，进行对应的业务操作
-        Integer rechargeType = merchantRecharge.getRechargeType();
+    public List<Merchant> getMerchantsWithIncreasedRecommendationWeight() {
+        List<String> merchantIds = getMerchantsByRechargeFunction(INCREASE_RECOMMENDATION_WEIGHT);
+        return merchantMapper.selectBatchIds(merchantIds);
+    }
 
-        return null;
+    /**
+     * 查询购买了 广告位 的商家
+     *
+     * @return 商家列表
+     */
+    @Override
+    public List<Merchant> getMerchantsWithAdSpacePurchase() {
+        List<String> merchantIds = getMerchantsByRechargeFunction(PURCHASE_ADVERTISING_SPACE);
+        return merchantMapper.selectBatchIds(merchantIds);
+    }
+
+    /**
+     * 查询购买了 优化搜索 的商家
+     *
+     * @return 商家列表
+     */
+    @Override
+    public List<Merchant> getMerchantsWithSearchOptimization() {
+        List<String> merchantIds = getMerchantsByRechargeFunction(OPTIMIZE_SEARCH);
+        return merchantMapper.selectBatchIds(merchantIds);
+    }
+
+    private List<String> getMerchantsByRechargeFunction(Integer rechargeFunction) {
+        List<MerchantRecharge> merchantRecharges = merchantRechargeMapper.selectList(new LambdaQueryWrapper<MerchantRecharge>()
+                .eq(MerchantRecharge::getRechargeType, rechargeFunction));
+        List<String> merchantIds = new ArrayList<>();
+        merchantRecharges.forEach(merchantRecharge -> {
+            String id = merchantRecharge.getId();
+            merchantIds.add(id);
+        });
+        return merchantIds;
     }
 }
