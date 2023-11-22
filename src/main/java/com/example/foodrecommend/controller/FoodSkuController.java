@@ -75,11 +75,11 @@ public class FoodSkuController {
     }
 
     @ApiOperation("获取猜你想吃")
-    @GetMapping("/getYouWantEat")
-    public R selectFoodByMerchantID() {
+    @PostMapping("/getYouWantEat")
+    public R selectFoodByMerchantID(@RequestBody List<String> shownFoodIds) {
         String token = CheckTokenInterceptor.getToken();
         User user = GetUserInfoByToken.parseToken(token);
-        return success(this.foodSkuService.getYouWantEat(user.getOpenId()));
+        return success(this.foodSkuService.getYouWantEat(user.getOpenId(), shownFoodIds));
     }
 
     @ApiOperation("获取家乡美食")

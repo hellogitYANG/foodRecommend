@@ -56,37 +56,50 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     static LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
     static LocalDateTime now = LocalDateTime.now();
     @Override
-    public HashMap<String, Collection<FoodSku>> getYouWantEat(String openId) {
-        //口味余弦相似度推荐
-        List<FoodSku> kouWeiList = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper);
+    public HashMap<String, Collection<FoodSku>> getYouWantEat(String openId, List<String> shownFoodIds) {
+        //口味余弦相似度推荐三个
+        List<FoodSku> kouWeiList = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds);
+        //去重
+        kouWeiList.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
 
         //常买三个
         QueryWrapper<Orders> q1 = new QueryWrapper<>();
         q1.eq("user_id",openId);
         q1.ge("create_time", oneWeekAgo).le("create_time", now);
+        // 排除已展示的菜品
+        if (shownFoodIds != null && !shownFoodIds.isEmpty()) {
+            q1.notIn("food_sku_id", shownFoodIds);
+        }
         List<Orders> orders = ordersMapper.selectList(q1);
             // 统计每个商品出现的次数
             Map<String, Long> itemCountMap = orders.stream()
                     .collect(Collectors.groupingBy(Orders::getFoodSkuId, Collectors.counting()));
 
-        // 按照商品出现次数降序排序
-        List<FoodSku> foodSkuList = itemCountMap.entrySet()
-                .stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(3)
-                .map(entry -> foodSkuMapper.selectById(entry.getKey()))
-                .collect(Collectors.toList());
+            // 按照商品出现次数降序排序
+            List<FoodSku> foodSkuList = itemCountMap.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .limit(3)
+                    .map(entry -> foodSkuMapper.selectById(entry.getKey()))
+                    .collect(Collectors.toList());
+                    //去重
+                    foodSkuList.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
 
         //最近(一天前到现在)浏览三个
-        List<FoodSku> liuLan = getLiuLan(openId,userBehaviorMapper, foodSkuMapper);
+        List<FoodSku> liuLan = getLiuLan(openId,userBehaviorMapper, foodSkuMapper,shownFoodIds);
+            //去重
+            liuLan.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
 
         //好评次数最多三个
-        List<FoodSku> haoPing = getHaoPing(openId, foodCommentsMapper, foodSkuMapper);
+        List<FoodSku> haoPing = getHaoPing(openId, foodCommentsMapper, foodSkuMapper,shownFoodIds);
+            //去重
+            haoPing.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
 
         //收藏菜品三个
-        List<FoodSku> foodSkus = randomCollectFoodSku(openId, userMapper, foodSkuMapper);
+        List<FoodSku> foodSkus = randomCollectFoodSku(openId, userMapper, foodSkuMapper,shownFoodIds);
+            //去重
+            foodSkus.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
 
-        //基于天气
 
         //收集起来并返回
         HashSet<FoodSku> allFoodSku = new HashSet<>();
@@ -106,11 +119,15 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
 
         return stringListHashMap;
     }
-    public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper) {
+    public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper, List<String> shownFoodIds) {
         //用户信息和全部食品和口味字典
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
-        //全部食品
-        List<FoodSku> allFood = foodSkuMapper.selectList(null);
+        // 排除已展示的菜品
+        QueryWrapper<FoodSku> q = new QueryWrapper<>();
+        if (shownFoodIds != null && !shownFoodIds.isEmpty()) {
+            q.notIn("id", shownFoodIds);
+        }
+        List<FoodSku> allFood = foodSkuMapper.selectList(q);
         //口味字典转map key:name  value:Id ,id作为独特整型
         List<FoodStatsDictionary> statsDictionaryList = foodStatsDictionaryMapper.selectList(null);
         Map<String, Integer> dictionaryMap = statsDictionaryList.stream()
@@ -124,6 +141,10 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         for (FoodSku food : allFood) {
             //获取菜品口味转为Map
             Map<String,String> foodMap=JSONUtil.toBean(food.getFoodStats(), Map.class);
+            //移除掉地区的影响
+            if (foodMap.containsKey("地区")){
+                foodMap.remove("地区");
+            }
             //计算余弦值
             double similarity = CosineSimilarity.calculateCosineSimilarity(userMap,foodMap,dictionaryMap);
             System.out.println(similarity);
@@ -142,15 +163,19 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         }));
 
         // 返回前5个推荐结果
-        return recommendedFood.subList(0, Math.min(recommendedFood.size(), 5));
+        return recommendedFood.subList(0, Math.min(recommendedFood.size(), 3));
     }
 
 
-    public static List<FoodSku> getLiuLan(String openId, BaseMapper<UserBehavior> userbehaviorMapper,BaseMapper<FoodSku> foodSkuMapper){
+    public static List<FoodSku> getLiuLan(String openId, BaseMapper<UserBehavior> userbehaviorMapper,BaseMapper<FoodSku> foodSkuMapper, List<String> shownFoodIds){
         //最近(一天前到现在)浏览三个
         QueryWrapper<UserBehavior> q2 = new QueryWrapper<>();
         q2.eq("user_id",openId);
         q2.ge("create_time", oneDayAgo).le("create_time", now);
+        // 排除已展示的菜品
+        if (shownFoodIds != null && !shownFoodIds.isEmpty()) {
+            q2.notIn("food_sku_id", shownFoodIds);
+        }
         List<UserBehavior> userBehaviors = userbehaviorMapper.selectList(q2);
         // 统计每个商品出现的次数
         Map<String, Long> itemCountMap = userBehaviors.stream()
@@ -167,12 +192,15 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         return foodSkuList;
     }
 
-    public static List<FoodSku> getHaoPing(String openId, BaseMapper<FoodComments> foodCommentsMapper, BaseMapper<FoodSku> foodSkuMapper){
+    public static List<FoodSku> getHaoPing(String openId, BaseMapper<FoodComments> foodCommentsMapper, BaseMapper<FoodSku> foodSkuMapper, List<String> shownFoodIds){
         //好评次数最多三个
         QueryWrapper<FoodComments> q2 = new QueryWrapper<>();
         q2.eq("user_id",openId);
         q2.ge("comment_star",8);//评分大于或者等于8才算好评
         q2.ge("create_time", oneWeekAgo).le("create_time", now);
+        if (shownFoodIds != null && !shownFoodIds.isEmpty()) {
+            q2.notIn("food_sku_id", shownFoodIds);
+        }
         List<FoodComments> foodCommentsList = foodCommentsMapper.selectList(q2);
         // 统计每个商品出现的次数
         Map<String, Long> itemCountMap = foodCommentsList.stream()
@@ -188,7 +216,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
 
         return foodSkuList;
     }
-    public static List<FoodSku> randomCollectFoodSku(String openId,BaseMapper<User> userMapper, BaseMapper<FoodSku> foodSkuMapper){
+    public static List<FoodSku> randomCollectFoodSku(String openId,BaseMapper<User> userMapper, BaseMapper<FoodSku> foodSkuMapper, List<String> shownFoodIds){
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
         String collectFoodSku = user.getCollectFoodSku();
@@ -199,13 +227,23 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         String[] foodSkuArray = collectFoodSku.split(",");
         // 将数组转换为 List
         List<String> foodlist = Arrays.asList(foodSkuArray);
-        // 打乱列表
-        Collections.shuffle(foodlist);
-        // 取出前面三个元素
-        List<String> randomFoodSkus = foodlist.subList(0, Math.min(foodlist.size(), 3));
 
-        List<FoodSku> foodSkuList = randomFoodSkus.stream().map(foodSkuId -> foodSkuMapper.selectById(foodSkuId)).collect(Collectors.toList());
-        return foodSkuList;
+        for (String shownFoodId : shownFoodIds) {
+            if (foodlist.contains(shownFoodId)){
+                foodlist.remove(shownFoodId);
+            }
+        }
+        if (foodlist.size()>0){
+            // 打乱列表
+            Collections.shuffle(foodlist);
+            // 取出前面三个元素
+            List<String> randomFoodSkus = foodlist.subList(0, Math.min(foodlist.size(), 3));
+
+            List<FoodSku> foodSkuList = randomFoodSkus.stream().map(foodSkuId -> foodSkuMapper.selectById(foodSkuId)).collect(Collectors.toList());
+            return foodSkuList;
+        }
+        return new ArrayList<FoodSku>();
+
     }
 
 

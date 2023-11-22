@@ -15,7 +15,7 @@ import java.util.List;
  * @createDate 2023-11-13 00:14:57
  */
 public interface FoodSkuService extends IService<FoodSku> {
-    HashMap<String, Collection<FoodSku>> getYouWantEat(String openId);
+    HashMap<String, Collection<FoodSku>> getYouWantEat(String openId,List<String> shownFoodIds);
 
     /**
      * 通过销量和评分推荐菜品

@@ -71,6 +71,9 @@ public class FoodSku implements Serializable {
     @TableField(value = "merchant_id")
     private String merchantId;
 
+    @TableField(value = "merchant_food_type")
+    private String merchantFoodType;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -87,11 +90,12 @@ public class FoodSku implements Serializable {
                 Objects.equals(money, foodSku.money) &&
                 Objects.equals(createTime, foodSku.createTime) &&
                 Objects.equals(updateTime, foodSku.updateTime) &&
-                Objects.equals(merchantId, foodSku.merchantId);
+                Objects.equals(merchantId, foodSku.merchantId)&&
+                Objects.equals(merchantFoodType, foodSku.merchantFoodType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, foodImg, salesNum, money, createTime, updateTime, merchantId);
+        return Objects.hash(id, name, foodImg, salesNum, money, createTime, updateTime, merchantId,merchantFoodType);
     }
 }
