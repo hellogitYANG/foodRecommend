@@ -11,9 +11,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
-import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
 
 /**
@@ -33,6 +34,18 @@ public class ReportController {
     private ReportService reportService;
 
     /**
+     * 处理管理员提交的审核结果，扣除商家的分数
+     *
+     * @param map 举报表ID 和 扣除的分数（star）
+     * @return 提交结果
+     */
+    @ApiOperation("处理管理员提交的审核结果")
+    @PostMapping("/submitAuditResult")
+    public R submitAuditResult(@RequestBody Map map) {
+        return success(this.reportService.handleAuditAndDeductScore(map));
+    }
+
+    /**
      * 分页查询所有数据
      *
      * @param page   分页对象
@@ -43,6 +56,18 @@ public class ReportController {
     @GetMapping
     public R selectAll(Page<Report> page, Report report) {
         return success(this.reportService.page(page, new QueryWrapper<>(report)));
+    }
+
+    /**
+     * 通过主键查询单条数据
+     *
+     * @param id 主键
+     * @return 单条数据
+     */
+    @ApiOperation("通过主键查询单条数据")
+    @GetMapping("{id}")
+    public R selectOne(@PathVariable Serializable id) {
+        return success(this.reportService.getById(id));
     }
 
     /**
@@ -80,37 +105,5 @@ public class ReportController {
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.reportService.removeByIds(idList));
     }
-
-    /**
-     * 查看一条举报记录的详细情况
-     *
-     * @param id 举报表id
-     * @return 举报表对象
-     */
-    @ApiOperation("查看举报记录")
-    @GetMapping("/check/{id}")
-    public R check(@PathVariable String id) {
-        // 查询举报表对象
-        Report report = this.reportService.getById(id);
-        return success(report);
-    }
-
-    /**
-     * 管理员进行审核，提交要扣除的分数
-     *
-     * @param id   举报表id
-     * @param star 扣除的分数
-     * @return 成功/失败
-     */
-    @ApiOperation("管理员审核结果")
-    @GetMapping("/audit/{id}/{star}")
-    public R audit(@PathVariable String id, @PathVariable Integer star) {
-        Boolean reviewResult = this.reportService.adminToReview(id, star);
-        if (!reviewResult) {
-            return failure(500, "审核失败");
-        }
-        return success("审核成功");
-    }
-
 }
 

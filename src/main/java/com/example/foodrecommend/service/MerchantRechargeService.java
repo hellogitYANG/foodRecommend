@@ -1,16 +1,31 @@
 package com.example.foodrecommend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.beans.MerchantRecharge;
+
+import java.util.List;
 
 public interface MerchantRechargeService extends IService<MerchantRecharge> {
 
     /**
-     * 商家进行充值
+     * 查询购买了 增加推荐权重值 的商家
      *
-     * @param merchantRecharge 商家充值的信息，应该有商家id，充值类型，充值金额，有效时间
-     *                         充值类型，1：增加推荐权重，2：购买广告位，3：优化搜索
-     * @return
+     * @return 商家列表
      */
-    String recharge(MerchantRecharge merchantRecharge);
+    List<Merchant> getMerchantsWithIncreasedRecommendationWeight();
+
+    /**
+     * 查询购买了 广告位 的商家
+     *
+     * @return 商家列表
+     */
+    List<Merchant> getMerchantsWithAdSpacePurchase();
+
+    /**
+     * 查询购买了 优化搜索 的商家
+     *
+     * @return 商家列表
+     */
+    List<Merchant> getMerchantsWithSearchOptimization();
 }
