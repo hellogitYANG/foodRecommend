@@ -60,7 +60,12 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         //口味余弦相似度推荐三个
         List<FoodSku> kouWeiList = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds);
         //去重
-        kouWeiList.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
+        kouWeiList.forEach(foodSku -> {
+            String id = foodSku.getId();
+            if (id != null) {
+                shownFoodIds.add(id);
+            }
+        });
 
         //常买三个
         QueryWrapper<Orders> q1 = new QueryWrapper<>();
@@ -83,22 +88,45 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                     .map(entry -> foodSkuMapper.selectById(entry.getKey()))
                     .collect(Collectors.toList());
                     //去重
-                    foodSkuList.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
+                    foodSkuList.forEach(foodSku -> {
+                        String id = foodSku.getId();
+                        if (id != null) {
+                            shownFoodIds.add(id);
+                        }
+                    });
 
         //最近(一天前到现在)浏览三个
         List<FoodSku> liuLan = getLiuLan(openId,userBehaviorMapper, foodSkuMapper,shownFoodIds);
             //去重
-            liuLan.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
+            liuLan.forEach(foodSku -> {
+                String id = foodSku.getId();
+                if (id != null) {
+                    shownFoodIds.add(id);
+                }
+            });
 
         //好评次数最多三个
         List<FoodSku> haoPing = getHaoPing(openId, foodCommentsMapper, foodSkuMapper,shownFoodIds);
             //去重
-            haoPing.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
+            haoPing.forEach(foodSku -> {
+                String id = foodSku.getId();
+                if (id != null) {
+                    shownFoodIds.add(id);
+                }
+            });
+
 
         //收藏菜品三个
         List<FoodSku> foodSkus = randomCollectFoodSku(openId, userMapper, foodSkuMapper,shownFoodIds);
+        System.out.println(foodSkus);
             //去重
-            foodSkus.forEach(foodSku -> shownFoodIds.add(foodSku.getId()));
+            foodSkus.forEach(foodSku -> {
+                String id = foodSku.getId();
+                if (id != null) {
+                    shownFoodIds.add(id);
+                }
+            });
+
 
 
         //收集起来并返回
@@ -227,19 +255,24 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         String[] foodSkuArray = collectFoodSku.split(",");
         // 将数组转换为 List
         List<String> foodlist = Arrays.asList(foodSkuArray);
+        List<String> newfoodlist = new ArrayList<>();
 
-        for (String shownFoodId : shownFoodIds) {
-            if (foodlist.contains(shownFoodId)){
-                foodlist.remove(shownFoodId);
+        for (String FoodId : foodlist) {
+            if (shownFoodIds.contains(FoodId)){
+                continue;
             }
+            newfoodlist.add(FoodId);
         }
-        if (foodlist.size()>0){
+        if (newfoodlist.size()>0){
             // 打乱列表
-            Collections.shuffle(foodlist);
+            Collections.shuffle(newfoodlist);
             // 取出前面三个元素
-            List<String> randomFoodSkus = foodlist.subList(0, Math.min(foodlist.size(), 3));
+            List<String> randomFoodSkus = newfoodlist.subList(0, Math.min(newfoodlist.size(), 3));
 
-            List<FoodSku> foodSkuList = randomFoodSkus.stream().map(foodSkuId -> foodSkuMapper.selectById(foodSkuId)).collect(Collectors.toList());
+            List<FoodSku> foodSkuList = randomFoodSkus.stream()
+                    .map(foodSkuId -> foodSkuMapper.selectById(foodSkuId))
+                    .filter(foodSku -> foodSku != null)
+                    .collect(Collectors.toList());
             return foodSkuList;
         }
         return new ArrayList<FoodSku>();
