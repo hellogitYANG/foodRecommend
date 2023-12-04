@@ -1,12 +1,11 @@
 package com.example.foodrecommend.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.foodrecommend.beans.FoodSku;
 
-import java.util.List;
+import java.util.*;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -15,7 +14,7 @@ import java.util.List;
  * @createDate 2023-11-13 00:14:57
  */
 public interface FoodSkuService extends IService<FoodSku> {
-    HashMap<String, Collection<FoodSku>> getYouWantEat(String openId,List<String> shownFoodIds);
+    Page<Map<String, Collection<FoodSku>>> getYouWantEat(Page page, String openId);
 
     /**
      * 通过销量和评分推荐菜品

@@ -1,4 +1,8 @@
 spring:
+  redis:
+    host: 47.107.125.16
+    port: 6379
+    password: 123456
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://47.107.125.16:3306/foodRecomment?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
@@ -24,6 +28,7 @@ spring:
 #mybatis:
 #  mapper-locations: classpath:mappers/*Mapper.xml
 #  type-aliases-package: com.example.foodrecommend.beans
+
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*Mapper.xml

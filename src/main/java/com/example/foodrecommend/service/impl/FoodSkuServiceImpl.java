@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.*;
 import com.example.foodrecommend.mapper.*;
@@ -17,6 +18,7 @@ import com.example.foodrecommend.dto.FoodSkuDto;
 import com.example.foodrecommend.mapper.FoodSkuMapper;
 import com.example.foodrecommend.mapper.MerchantMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,15 +52,29 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     FoodStatsDictionaryMapper foodStatsDictionaryMapper;
     @Resource
     private MerchantMapper merchantMapper;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
 
     // 设置时间范围
     static LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
     static LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
     static LocalDateTime now = LocalDateTime.now();
     @Override
-    public HashMap<String, Collection<FoodSku>> getYouWantEat(String openId, List<String> shownFoodIds) {
-        //口味余弦相似度推荐三个
-        List<FoodSku> kouWeiList = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds);
+    public Page<Map<String, Collection<FoodSku>>> getYouWantEat(Page page,String openId) {
+        //第一页清空已显示的数据
+        if(page.getCurrent()==1){
+            clearUserViewedFoodSkus(openId);
+        }
+        //获取该用户已显示的数据
+        Set<String> viewedFoodSkuIds = getUserViewedFoodSkus(openId);
+        List<String> shownFoodIds=new ArrayList<>();
+        for (String viewedFoodSkuId : viewedFoodSkuIds) {
+            shownFoodIds.add(viewedFoodSkuId);
+        }
+        //口味余弦相似度推荐num个
+        int num=3;
+        List<FoodSku> kouWeiList = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds,num);
         //去重
         kouWeiList.forEach(foodSku -> {
             String id = foodSku.getId();
@@ -127,8 +143,6 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                 }
             });
 
-
-
         //收集起来并返回
         HashSet<FoodSku> allFoodSku = new HashSet<>();
         allFoodSku.addAll(kouWeiList);
@@ -137,17 +151,37 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         allFoodSku.addAll(haoPing);
         allFoodSku.addAll(foodSkus);
 
+        //如果推荐不足15个从口味余弦里面选
+        if (allFoodSku.size()<15){
+            int size=15-allFoodSku.size();
+            List<FoodSku> newkouwei = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds,size);
+            allFoodSku.addAll(newkouwei);
+            //去重
+            newkouwei.forEach(foodSku -> {
+                String id = foodSku.getId();
+                if (id != null) {
+                    shownFoodIds.add(id);
+                }
+            });
+        }
+
         HashMap<String, Collection<FoodSku>> stringListHashMap = new HashMap<>();
         stringListHashMap.put("口味",kouWeiList);
         stringListHashMap.put("常买",foodSkuList);
         stringListHashMap.put("浏览",liuLan);
         stringListHashMap.put("好评",haoPing);
         stringListHashMap.put("收藏",foodSkus);
-        stringListHashMap.put("汇总（去重）",allFoodSku);
+        stringListHashMap.put("汇总（去重，不足15个追加口味）",allFoodSku);
 
-        return stringListHashMap;
+        addUserViewedFoodSkus(openId,shownFoodIds);
+
+        Page<Map<String, Collection<FoodSku>>> mapPage = new Page<>();
+        ArrayList<Map<String, Collection<FoodSku>>> maps = new ArrayList<>();
+        maps.add(stringListHashMap);
+        mapPage.setRecords(maps);
+        return mapPage;
     }
-    public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper, List<String> shownFoodIds) {
+    public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper, List<String> shownFoodIds,int num) {
         //用户信息和全部食品和口味字典
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
         // 排除已展示的菜品
@@ -177,7 +211,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             double similarity = CosineSimilarity.calculateCosineSimilarity(userMap,foodMap,dictionaryMap);
             System.out.println(similarity);
             // 假设设定相似度阈值为0.5，可根据实际情况调整
-            if (similarity > 0.95) {
+            if (similarity > 0.70) {
                 recommendedFood.add(food);
             }
         }
@@ -190,8 +224,8 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             return -similarity; // 从高到低排序
         }));
 
-        // 返回前5个推荐结果
-        return recommendedFood.subList(0, Math.min(recommendedFood.size(), 3));
+        // 返回前num个推荐结果
+        return recommendedFood.subList(0, Math.min(recommendedFood.size(), num));
     }
 
 
@@ -351,6 +385,22 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         return locationFood;
 
     }
+    public void addUserViewedFoodSkus(String userId, List<String> foodSkuIds) {
+        String key = "user:viewed:" + userId;
+        for (String foodSkuId : foodSkuIds) {
+            redisTemplate.opsForSet().add(key, foodSkuId);
+        }
+    }
+    public Set<String> getUserViewedFoodSkus(String userId) {
+        String key = "user:viewed:" + userId;
+        return redisTemplate.opsForSet().members(key);
+    }
+    public void clearUserViewedFoodSkus(String userId) {
+        String key = "user:viewed:" + userId;
+        redisTemplate.delete(key);
+    }
+
+
 }
 
 

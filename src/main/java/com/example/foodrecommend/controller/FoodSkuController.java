@@ -76,10 +76,10 @@ public class FoodSkuController {
 
     @ApiOperation("获取猜你想吃")
     @PostMapping("/getYouWantEat")
-    public R selectFoodByMerchantID(@RequestBody List<String> shownFoodIds) {
+    public R selectFoodByMerchantID(@RequestBody Page page) {
         String token = CheckTokenInterceptor.getToken();
         User user = GetUserInfoByToken.parseToken(token);
-        return success(this.foodSkuService.getYouWantEat(user.getOpenId(), shownFoodIds));
+        return success(this.foodSkuService.getYouWantEat(page,user.getOpenId()));
     }
 
     @ApiOperation("获取家乡美食")
