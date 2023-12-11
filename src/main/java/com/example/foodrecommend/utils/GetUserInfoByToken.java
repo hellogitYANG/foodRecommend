@@ -22,6 +22,7 @@ public class GetUserInfoByToken {
         user.setAuthority((Integer) claims.get("authority"));
         user.setIsBan((Integer) claims.get("isBan"));
         user.setPhone((String) claims.get("phone"));
+        user.setUserName((String) claims.get("userName"));
         //foodStats是map json字符串
         String foodStatsJson =(String) claims.get("foodStats");
 

@@ -25,6 +25,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .addPathPatterns("/orders/**")
                 .addPathPatterns("/report/**")
                 .addPathPatterns("/user/**")
+                .addPathPatterns("/orderFather/**")
                 .excludePathPatterns("/user/login");
 //为什么不使用下面这种方法，对全部进行拦截，然后排除登录和接口文档的地址，因为这样接口文档会出问题，可能会有其他调用
 //        registry.addInterceptor(checkTokenInterceptor)

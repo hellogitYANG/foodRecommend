@@ -52,9 +52,15 @@ public class FoodSkuController {
     }
 
     @ApiOperation("根据商家ID分页查询菜品信息")
-    @GetMapping("/selectFoodByMerchantID/{merchantId}")
-    public R selectFoodByMerchantID(Page<FoodSku> page, @PathVariable String merchantId) {
+    @GetMapping("/selectFoodByMerchantIDPage/{merchantId}")
+    public R selectFoodByMerchantIDPage(Page<FoodSku> page, @PathVariable String merchantId) {
         return success(this.foodSkuService.page(page, new QueryWrapper<FoodSku>().eq("merchant_id", merchantId)));
+    }
+
+    @ApiOperation("根据商家ID查询菜品信息")
+    @GetMapping("/selectFoodByMerchantID/{merchantId}")
+    public R selectFoodByMerchantID(@PathVariable String merchantId) {
+        return success(this.foodSkuService.list(new QueryWrapper<FoodSku>().eq("merchant_id", merchantId)));
     }
 
     /**

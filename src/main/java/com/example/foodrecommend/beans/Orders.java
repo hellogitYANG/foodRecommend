@@ -94,6 +94,11 @@ public class Orders implements Serializable {
 
     @TableField(value = "mark")
     private Integer mark;
+    /**
+     * 父订单id
+     */
+    @TableField(value = "order_id")
+    private String orderId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
