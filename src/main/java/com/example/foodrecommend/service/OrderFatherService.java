@@ -3,7 +3,9 @@ package com.example.foodrecommend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.OrderFather;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.foodrecommend.beans.User;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,4 +15,8 @@ import java.util.Map;
 */
 public interface OrderFatherService extends IService<OrderFather> {
     Page<Map<String, Object>> selectOrderInfoPage(Page page, String openId);
+
+    int addOrderFatherByIds(List<String> foodIds, User user);
+
+    int updateUserStatus(User user);
 }

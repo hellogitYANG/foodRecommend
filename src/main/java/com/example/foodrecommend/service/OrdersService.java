@@ -13,6 +13,5 @@ import java.util.List;
 */
 public interface OrdersService extends IService<Orders> {
 
-    public int insertOrder(Orders orders,String token);
 
 }

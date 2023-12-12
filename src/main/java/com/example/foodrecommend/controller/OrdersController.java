@@ -75,13 +75,7 @@ public class OrdersController  {
     @ApiOperation("新增单条数据")
     @PostMapping
     public R insert(@RequestBody Orders orders, @RequestHeader("token") String token) {
-        int i = this.ordersService.insertOrder(orders, token);
-        if (i>0){
             return success(null);
-        }else {
-            return failure(1001,"添加订单失败");
-        }
-
     }
 
     /**

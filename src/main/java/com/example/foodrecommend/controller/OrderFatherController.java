@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
+import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
 
 /**
@@ -56,6 +57,20 @@ public class OrderFatherController  {
         String token = CheckTokenInterceptor.getToken();
         User user = GetUserInfoByToken.parseToken(token);
         return success(this.orderFatherService.selectOrderInfoPage(page,user.getOpenId()));
+    }
+
+    @ApiOperation("增加订单信息")
+    @PostMapping("/addOrderByFoodIds")
+    public R addOrder(@RequestBody List<String> foodIds) {
+        String token = CheckTokenInterceptor.getToken();
+        User user = GetUserInfoByToken.parseToken(token);
+        int i = this.orderFatherService.addOrderFatherByIds(foodIds, user);
+        if(i>0){
+            this.orderFatherService.updateUserStatus(user);
+            return success(i);
+        }
+        return failure(1001,"fail");
+
     }
     /**
      * 通过主键查询单条数据
