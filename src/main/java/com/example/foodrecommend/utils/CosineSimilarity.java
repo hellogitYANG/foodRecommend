@@ -16,7 +16,7 @@ public class CosineSimilarity {
         // 获取两个向量的共同键
         Set<String> commonKeys = getCommonKeys(vector1, vector2);
 
-        // 将口味转换为向量表示
+        // 记录用户口味和当前菜品口味键（key）,值(口味的id)
         Map<String, Integer> vector1Numeric = convertToNumericVector(vector1, commonKeys,tasteDictionary);
         Map<String, Integer> vector2Numeric = convertToNumericVector(vector2, commonKeys,tasteDictionary);
 

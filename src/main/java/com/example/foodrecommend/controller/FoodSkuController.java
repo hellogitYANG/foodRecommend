@@ -101,10 +101,11 @@ public class FoodSkuController {
      * @param id 主键
      * @return 单条数据
      */
-    @ApiOperation("通过主键查询单条数据")
+    @ApiOperation("通过主键查询菜品单条数据，包含当前用户有无收藏")
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
-        return success(this.foodSkuService.getById(id));
+        User user = GetUserInfoByToken.parseToken(CheckTokenInterceptor.getToken());
+        return success(this.foodSkuService.getSkuInfo(user,id));
     }
 
     /**

@@ -1,16 +1,21 @@
 package com.example.foodrecommend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.FoodComments;
 import com.example.foodrecommend.beans.Orders;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.mapper.FoodCommentsMapper;
+import com.example.foodrecommend.mapper.OrderFatherMapper;
 import com.example.foodrecommend.mapper.OrdersMapper;
 import com.example.foodrecommend.service.FoodCommentsService;
 import com.example.foodrecommend.utils.GetUserInfoByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
 * @author 86176
@@ -23,31 +28,26 @@ public class FoodCommentsServiceImpl extends ServiceImpl<FoodCommentsMapper, Foo
 
     @Autowired
     OrdersMapper ordersMapper;
+
+    @Autowired
+    OrderFatherMapper orderFatherMapper;
     @Autowired
     FoodCommentsMapper foodCommentsMapper;
 
     @Override
+    @Transactional
     public int InsertByFullOrder(FoodComments foodComments,String token) {
         User user = GetUserInfoByToken.parseToken(token);
 
-        String orderId = foodComments.getOrderId();
-        Orders orders = ordersMapper.selectById(orderId);
-        if (!user.getOpenId().equals(orders.getUserId())){
-            return 0;
+        String orderFatherId = foodComments.getOrderFatherId();
+        List<Orders> ordersList = ordersMapper.selectList(new QueryWrapper<Orders>().eq("order_father_id", orderFatherId).eq("user_id",user.getOpenId()));
+        for (Orders orders : ordersList) {
+            BeanUtil.copyProperties(orders,foodComments,"id");
+            foodComments.setId(null);
+            foodComments.setOrderId(orders.getId());
+            foodCommentsMapper.insert(foodComments);
         }
-        BeanUtil.copyProperties(orders,foodComments,"id");
-
-
-//        foodComments.setFoodName(orders.getFoodName());
-//        foodComments.setFoodSkuId(orders.getFoodSkuId());
-//        foodComments.setUserId(orders.getUserId());
-//        foodComments.setFoodTaste(orders.getFoodTaste());
-//        foodComments.setIsBrush(orders.getIsBrush());
-//        foodComments.setMerchantId(orders.getMerchantId());
-//        foodComments.setMerchantPhone(orders.getMerchantPhone());
-
-        int insert = foodCommentsMapper.insert(foodComments);
-        return insert;
+        return 1;
     }
 }
 

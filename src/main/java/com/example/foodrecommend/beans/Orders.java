@@ -97,8 +97,8 @@ public class Orders implements Serializable {
     /**
      * 父订单id
      */
-    @TableField(value = "order_id")
-    private String orderId;
+    @TableField(value = "order_father_id")
+    private String orderFatherId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

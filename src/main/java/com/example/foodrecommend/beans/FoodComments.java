@@ -28,6 +28,12 @@ public class FoodComments implements Serializable {
     private String orderId;
 
     /**
+     * 父订单id
+     */
+    @TableField(value = "order_father_id")
+    private String orderFatherId;
+
+    /**
      * 用户ID
      */
     @TableField(value = "user_id")

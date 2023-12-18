@@ -1,8 +1,7 @@
 spring:
   redis:
-    host: 47.107.125.16
+    host: 43.136.110.115
     port: 6379
-    password: 123456
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://47.107.125.16:3306/foodRecomment?characterEncoding=utf-8&serverTimezone=Asia/Shanghai

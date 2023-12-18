@@ -3,7 +3,9 @@ package com.example.foodrecommend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.foodrecommend.beans.FoodSku;
+import com.example.foodrecommend.beans.User;
 
+import java.io.Serializable;
 import java.util.*;
 
 import java.util.List;
@@ -25,4 +27,6 @@ public interface FoodSkuService extends IService<FoodSku> {
     List<FoodSku> recommendBySalesAndScore(Integer n);
 
     List<FoodSku>  getLocationFood(String openId);
+
+    Map<String,Object> getSkuInfo(User user, Serializable id);
 }

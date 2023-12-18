@@ -40,9 +40,9 @@ public class FoodCommentsController  {
      * @param foodComments 查询实体
      * @return 所有数据
      */
-    @ApiOperation("分页查询折扣信息")
-    @GetMapping
-    public R selectAll(Page<FoodComments> page, FoodComments foodComments) {
+    @ApiOperation("分页查询评论信息")
+    @PostMapping("/page/foodComments")
+    public R selectAll(Page<FoodComments> page,@RequestBody FoodComments foodComments) {
         return success(this.foodCommentsService.page(page, new QueryWrapper<>(foodComments)));
     }
 

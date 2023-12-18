@@ -3,9 +3,13 @@ package com.example.foodrecommend.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.dingshi.SendMessage;
+import com.example.foodrecommend.mapper.FoodSkuMapper;
 import com.example.foodrecommend.mapper.ReportMapper;
 import com.example.foodrecommend.service.UserService;
 import com.example.foodrecommend.mapper.UserMapper;
@@ -25,9 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
@@ -49,6 +52,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     ReportMapper reportMapper;
 
+    @Autowired
+    FoodSkuMapper foodSkuMapper;
     @Override
     public R login(String jscode, String code) throws JsonProcessingException {
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid=wx417de6da67c6718e&secret=913c2e22bd7247bacba325cc4681ad9f&grant_type=authorization_code&js_code=" + jscode;
@@ -98,6 +103,55 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User getUserInfoByToken(String token) {
         return GetUserInfoByToken.parseToken(token);
+    }
+
+    @Override
+    public int addCollectFoodSku(User user, String foodSkuId) {
+        User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
+        String[] split = openUser.getCollectFoodSku().split(",");
+//        List<String> collect = Arrays.asList(split);不能用Arrays.asList来转换，会报错
+        List<String> collect = new ArrayList<>(Arrays.asList(split));
+        if(collect.contains(foodSkuId)){
+            collect.remove(new String(foodSkuId));
+        }else {
+            collect.add(foodSkuId);
+        }
+        String updateCollect = collect.stream().map(String::valueOf).collect(Collectors.joining(","));
+        openUser.setCollectFoodSku(updateCollect);
+
+        userMapper.updateById(openUser);
+
+        return 0;
+    }
+
+    @Override
+    public Page<FoodSku> getUserCollectPage(Page<FoodSku> page, User user) {
+        User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
+
+        String collects = openUser.getCollectFoodSku();
+        List<String> allCollects = Arrays.asList(collects.split(","));
+
+        // 计算总数
+        long total = allCollects.size();
+        page.setTotal(total);
+
+        // 计算分页参数
+        long size = page.getSize();
+        long current = page.getCurrent();
+        long start = (current - 1) * size;
+        long end = start + size > total ? total : start + size;
+
+        // 截取当前页的收藏列表并转换为FoodSku对象
+        List<FoodSku> collectSkus = allCollects.subList((int)start, (int)end)
+                .stream()
+                .map(id -> foodSkuMapper.selectById(id)) // 直接使用 Mapper 方法
+                .collect(Collectors.toList());
+
+        // 设置分页记录
+        page.setRecords(collectSkus);
+
+        return page;
+
     }
 
     public static String getToken(User user) {

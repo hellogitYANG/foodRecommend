@@ -1,5 +1,7 @@
 package com.example.foodrecommend.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.foodrecommend.utils.R;
@@ -15,4 +17,8 @@ public interface UserService extends IService<User> {
     public R login(String jscode, String code) throws JsonProcessingException;
     //通过token获取用户信息
     public User getUserInfoByToken(String token);
+
+    int addCollectFoodSku(User user, String foodSkuId);
+
+    Page<FoodSku> getUserCollectPage(Page<FoodSku> page, User user);
 }

@@ -4,8 +4,11 @@ package com.example.foodrecommend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.User;
+import com.example.foodrecommend.interceptor.CheckTokenInterceptor;
 import com.example.foodrecommend.service.UserService;
+import com.example.foodrecommend.utils.GetUserInfoByToken;
 import com.example.foodrecommend.utils.R;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
@@ -59,6 +62,23 @@ public class UserController  {
     public R getUserInfoByToken(@RequestHeader("token") String token){
         //如果能进来成功了
         return  success(userService.getUserInfoByToken(token));
+    }
+
+    @ApiOperation("用户添加修改收藏商品")
+    @GetMapping("/switchCollectFoodSku")
+    public R switchCollectFoodSku(String foodSkuId){
+        String token = CheckTokenInterceptor.getToken();
+        User user = GetUserInfoByToken.parseToken(token);
+        //如果能进来成功了
+        return  success(userService.addCollectFoodSku(user,foodSkuId));
+    }
+
+    @ApiOperation("获取用户收藏菜品，分页")
+    @GetMapping("/getUserCollectPage")
+    public R getUserCollectPage(Page<FoodSku> page){
+        User user = GetUserInfoByToken.parseToken(CheckTokenInterceptor.getToken());
+        //如果能进来成功了
+        return  success(userService.getUserCollectPage(page,user));
     }
     /**
      * 分页查询所有数据

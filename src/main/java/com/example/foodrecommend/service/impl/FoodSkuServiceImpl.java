@@ -22,6 +22,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -385,6 +386,24 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         return locationFood;
 
     }
+
+    @Override
+    public Map<String, Object> getSkuInfo(User user, Serializable id) {
+        //查出用户收藏
+        User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
+        String[] split = openUser.getCollectFoodSku().split(",");
+        ArrayList<String> collectList = new ArrayList<>(Arrays.asList(split));
+        //查出菜品信息
+        FoodSku foodSku = foodSkuMapper.selectById(id);
+        Map<String, Object> map = BeanUtil.beanToMap(foodSku);
+        if (collectList.contains(id)){
+            map.put("currentUserIsCollect",true);
+        }else {
+            map.put("currentUserIsCollect",false);
+        }
+        return map;
+    }
+
     public void addUserViewedFoodSkus(String userId, List<String> foodSkuIds) {
         String key = "user:viewed:" + userId;
         for (String foodSkuId : foodSkuIds) {

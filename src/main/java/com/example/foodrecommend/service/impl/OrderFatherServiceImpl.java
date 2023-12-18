@@ -49,12 +49,16 @@ public class OrderFatherServiceImpl extends ServiceImpl<OrderFatherMapper, Order
         //遍历父订单查出订单详情
         for (OrderFather record : records) {
             List<Orders> orderInfo = ordersMapper.selectList(new QueryWrapper<Orders>().eq("order_id", record.getId()));
+            //封装订单详情
             Map<String, Object> map = BeanUtil.beanToMap(record);
             map.put("orderInfo",orderInfo);
+            //封装商家名字和商家图片
+            Merchant merchant = merchantMapper.selectById(record.getMerchantId());
+            map.put("merchantName",merchant.getUserName());
+            map.put("merchantImg",merchant.getMerchantImg());
 
             list.add(map);
         }
-
         Page<Map<String, Object>> listPage = new Page<>();
         listPage.setTotal(orderPage.getTotal());
         listPage.setRecords(list);
@@ -87,7 +91,7 @@ public class OrderFatherServiceImpl extends ServiceImpl<OrderFatherMapper, Order
             //封装单个订单信息
             Orders orders = new Orders();
 
-            orders.setOrderId(uuid);
+            orders.setOrderFatherId(uuid);
             orders.setUserId(user.getOpenId());
             orders.setIsBrush(0);
             orders.setMerchantId(orderFather.getMerchantId());
