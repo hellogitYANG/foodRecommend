@@ -81,6 +81,7 @@ public class OrderFatherServiceImpl extends ServiceImpl<OrderFatherMapper, Order
             orderFather.setMerchantId(merchant.getId());
             orderFather.setMerchantPhone(merchant.getPhone());
             orderFather.setIsBrush(0);
+            orderFather.setIsComment(0);
 
             orderFatherMapper.insert(orderFather);
 

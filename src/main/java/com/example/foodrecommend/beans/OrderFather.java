@@ -58,6 +58,11 @@ public class OrderFather implements Serializable {
     private String address;
 
     /**
+     * 是否已评论
+     */
+    @TableField(value = "is_comment")
+    private Integer isComment;
+    /**
      * 创建时间
      */
     @TableField(value = "create_time")

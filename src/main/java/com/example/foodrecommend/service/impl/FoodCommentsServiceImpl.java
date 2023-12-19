@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.FoodComments;
+import com.example.foodrecommend.beans.OrderFather;
 import com.example.foodrecommend.beans.Orders;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.mapper.FoodCommentsMapper;
@@ -47,6 +48,9 @@ public class FoodCommentsServiceImpl extends ServiceImpl<FoodCommentsMapper, Foo
             foodComments.setOrderId(orders.getId());
             foodCommentsMapper.insert(foodComments);
         }
+        OrderFather orderFather = orderFatherMapper.selectById(orderFatherId);
+        orderFather.setIsComment(1);
+        orderFatherMapper.updateById(orderFather);
         return 1;
     }
 }
