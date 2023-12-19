@@ -48,7 +48,7 @@ public class OrderFatherServiceImpl extends ServiceImpl<OrderFatherMapper, Order
         List<OrderFather> records = orderPage.getRecords();
         //遍历父订单查出订单详情
         for (OrderFather record : records) {
-            List<Orders> orderInfo = ordersMapper.selectList(new QueryWrapper<Orders>().eq("order_id", record.getId()));
+            List<Orders> orderInfo = ordersMapper.selectList(new QueryWrapper<Orders>().eq("order_father_id", record.getId()));
             //封装订单详情
             Map<String, Object> map = BeanUtil.beanToMap(record);
             map.put("orderInfo",orderInfo);
