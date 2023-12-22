@@ -26,6 +26,7 @@ import static com.example.foodrecommend.utils.R.success;
 @RestController
 @Api(value = "举报表", tags = "举报表")
 @RequestMapping("report")
+@CrossOrigin
 public class ReportController {
     /**
      * 服务对象
@@ -55,6 +56,7 @@ public class ReportController {
     @ApiOperation("分页查询举报信息")
     @GetMapping
     public R selectAll(Page<Report> page, Report report) {
+        Page<Report> page1 = this.reportService.page(page, new QueryWrapper<>(report));
         return success(this.reportService.page(page, new QueryWrapper<>(report)));
     }
 
@@ -94,6 +96,12 @@ public class ReportController {
         return success(this.reportService.updateById(report));
     }
 
+    @ApiOperation("通过实体类主键处理单条数据")
+    @PutMapping("/chuli")
+    public R updateByChuli(@RequestBody Report report) {
+        return success(this.reportService.updateByChuli(report));
+    }
+
     /**
      * 删除数据
      *
@@ -104,6 +112,16 @@ public class ReportController {
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.reportService.removeByIds(idList));
+    }
+
+    /**
+     * 删除数据
+
+     */
+    @ApiOperation("根据主键id删除数据")
+    @DeleteMapping("{id}")
+    public R deleteById(@PathVariable Serializable id) {
+        return success(this.reportService.removeById(id));
     }
 }
 

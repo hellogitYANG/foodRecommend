@@ -21,4 +21,6 @@ public interface UserService extends IService<User> {
     int addCollectFoodSku(User user, String foodSkuId);
 
     Page<FoodSku> getUserCollectPage(Page<FoodSku> page, User user);
+
+    R loginByTest(String username, String password);
 }

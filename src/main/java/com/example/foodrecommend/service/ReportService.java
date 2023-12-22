@@ -20,4 +20,5 @@ public interface ReportService extends IService<Report> {
      */
     Boolean handleAuditAndDeductScore(Map map);
 
+    int updateByChuli(Report report);
 }

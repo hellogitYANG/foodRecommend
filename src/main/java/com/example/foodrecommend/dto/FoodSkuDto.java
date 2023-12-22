@@ -9,5 +9,5 @@ import lombok.*;
 @NoArgsConstructor
 public class FoodSkuDto extends FoodSku {
     // 推荐值 = 菜品销量 * 商家的评分
-    private Integer ScoreWeightSales;
+    private double ScoreWeightSales;
 }

@@ -2,6 +2,9 @@ package com.example.foodrecommend.service;
 
 import com.example.foodrecommend.beans.FoodStatsDictionary;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.foodrecommend.utils.TreeNode;
+
+import java.util.ArrayList;
 
 /**
 * @author 86176
@@ -10,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface FoodStatsDictionaryService extends IService<FoodStatsDictionary> {
 
+    ArrayList<TreeNode> getDictionaryTree();
 }

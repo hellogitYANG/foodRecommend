@@ -27,6 +27,7 @@ import static com.example.foodrecommend.utils.R.success;
 @RestController
 @Api(value = "商家表",tags = "商家表")
 @RequestMapping("merchant")
+@CrossOrigin
 public class MerchantController  {
     /**
      * 服务对象
@@ -44,7 +45,10 @@ public class MerchantController  {
     @ApiOperation("分页查询商家信息")
     @GetMapping
     public R selectAll(Page<Merchant> page, Merchant merchant) {
-        return success(this.merchantService.page(page, new QueryWrapper<>(merchant)));
+//        System.out.println(this.merchantService.page(page, new QueryWrapper<>(merchant)).getRecords());
+        QueryWrapper<Merchant> merchantQueryWrapper = new QueryWrapper<>(merchant);
+        merchantQueryWrapper.orderByDesc("create_time");
+        return success(this.merchantService.page(page, merchantQueryWrapper));
     }
 
 
@@ -113,6 +117,16 @@ public class MerchantController  {
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.merchantService.removeByIds(idList));
+    }
+
+    /**
+     * 删除数据
+
+     */
+    @ApiOperation("根据主键id删除数据")
+    @DeleteMapping("{id}")
+    public R deleteById(@PathVariable Serializable id) {
+        return success(this.merchantService.removeById(id));
     }
 }
 

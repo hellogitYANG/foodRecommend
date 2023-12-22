@@ -19,7 +19,7 @@ public class FoodStatsDictionary implements Serializable {
      * 口味表ID
      */
     @TableId(value = "id",type = IdType.AUTO)
-    private String id;
+    private Long id;
 
     /**
      * 口味名称

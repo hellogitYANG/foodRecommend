@@ -1,18 +1,14 @@
 package com.example.foodrecommend.beans;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Map;
+import lombok.Data;
+import java.math.BigDecimal;
 import java.util.Objects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
 
 /**
  * 
@@ -26,6 +22,7 @@ public class FoodSku implements Serializable {
      */
     @TableId(value = "id")
     private String id;
+
 
     /**
      * 菜品名称

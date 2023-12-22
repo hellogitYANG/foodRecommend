@@ -7,12 +7,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.FoodStatsDictionary;
 import com.example.foodrecommend.service.FoodStatsDictionaryService;
 import com.example.foodrecommend.utils.R;
+import com.example.foodrecommend.utils.TreeNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.foodrecommend.utils.R.success;
@@ -26,6 +28,7 @@ import static com.example.foodrecommend.utils.R.success;
 @RestController
 @Api(value = "口味表",tags = "口味表")
 @RequestMapping("foodStatsDictionary")
+@CrossOrigin
 public class FoodStatsDictionaryController  {
     /**
      * 服务对象
@@ -44,6 +47,13 @@ public class FoodStatsDictionaryController  {
     @GetMapping
     public R selectAll(Page<FoodStatsDictionary> page, FoodStatsDictionary foodStatsDictionary) {
         return success(this.foodStatsDictionaryService.page(page, new QueryWrapper<>(foodStatsDictionary)));
+    }
+
+    //获取口味字典树
+    @ApiOperation("获取口味字典树")
+    @GetMapping("/tree")
+    public R getDictionaryTree() {
+        return success(this.foodStatsDictionaryService.getDictionaryTree());
     }
 
     /**
