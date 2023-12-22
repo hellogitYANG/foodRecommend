@@ -154,6 +154,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     }
 
+    @Override
+    public R loginByTest(String username, String password) {
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id",username));
+        if (user != null) {
+            String token = getToken(user);
+            Map<String, Object> usermap = BeanUtil.beanToMap(user);
+            usermap.put("token", token);
+            return success(usermap);
+        }else {
+            return failure(1001,"错误");
+        }
+    }
+
     public static String getToken(User user) {
         //使用jwt规则生成token字符串
         JwtBuilder builder = Jwts.builder();

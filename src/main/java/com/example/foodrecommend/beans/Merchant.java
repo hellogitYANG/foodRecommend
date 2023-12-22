@@ -43,7 +43,7 @@ public class Merchant implements Serializable {
      * 商家评分
      */
     @TableField(value = "star")
-    private Integer star;
+    private Double star;
 
     /**
      * 商家头像链接

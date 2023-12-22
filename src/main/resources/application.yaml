@@ -32,9 +32,13 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:mapper/*Mapper.xml
   type-aliases-package: com.example.foodrecommend.beans
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 
 server:
   port: 8080
+
 
 qiNiuYun:
   link: http://s5xf1zlic.hd-bkt.clouddn.com/

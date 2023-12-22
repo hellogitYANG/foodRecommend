@@ -29,4 +29,6 @@ public interface FoodSkuService extends IService<FoodSku> {
     List<FoodSku>  getLocationFood(String openId);
 
     Map<String,Object> getSkuInfo(User user, Serializable id);
+
+    int saveFoodSku(FoodSku foodSku);
 }

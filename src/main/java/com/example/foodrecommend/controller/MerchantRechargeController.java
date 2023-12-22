@@ -1,8 +1,11 @@
 package com.example.foodrecommend.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.MerchantRecharge;
+import com.example.foodrecommend.mapper.MerchantMapper;
 import com.example.foodrecommend.service.MerchantRechargeService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
@@ -11,17 +14,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.example.foodrecommend.utils.R.success;
 
 @RestController
 @Api(value = "商家充值表",tags = "商家充值表")
 @RequestMapping("merchantRecharge")
+@CrossOrigin
 public class MerchantRechargeController {
 
     @Autowired
     private MerchantRechargeService merchantRechargeService;
+    @Autowired
+    private MerchantMapper merchantMapper;
 
     /**
      * 查询购买了 增加推荐权重值 的商家
@@ -66,7 +74,22 @@ public class MerchantRechargeController {
     @ApiOperation("分页查询折扣信息")
     @GetMapping
     public R selectAll(Page<MerchantRecharge> page, MerchantRecharge merchantRecharge) {
-        return success(this.merchantRechargeService.page(page, new QueryWrapper<>(merchantRecharge)));
+        Page<MerchantRecharge> page1 = this.merchantRechargeService.page(page, new QueryWrapper<>(merchantRecharge).orderByDesc("create_time"));
+        List<Map<String, Object>> hashMaps = new ArrayList<>();
+        for (MerchantRecharge f : page1.getRecords()) {
+            //这个东西把foodskuID转化成Long,本应该是String的，实体类间数据不严谨。到前端精度丢失
+            Map<String, Object> map = BeanUtil.beanToMap(f);
+            if(!f.getMerchantId().isEmpty()){
+                String merchantName = merchantMapper.selectById(f.getMerchantId()).getUserName();
+                map.put("merchantName",merchantName);
+            }
+            hashMaps.add(map);
+        }
+        Page page2 = new Page();
+        page2.setRecords(hashMaps);
+        page2.setTotal(page1.getTotal());
+        page2.setCurrent(page1.getCurrent());
+        return success(page2);
     }
 
     /**
@@ -115,6 +138,16 @@ public class MerchantRechargeController {
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.merchantRechargeService.removeByIds(idList));
+    }
+
+    /**
+     * 删除数据
+
+     */
+    @ApiOperation("根据主键id删除数据")
+    @DeleteMapping("{id}")
+    public R deleteById(@PathVariable Serializable id) {
+        return success(this.merchantRechargeService.removeById(id));
     }
 
 }

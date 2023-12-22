@@ -8,6 +8,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 
@@ -49,6 +50,18 @@ public class MerchantRecharge implements Serializable {
     private Integer validity;
 
     /**
+     * 2广告页面图片
+     */
+    @TableField(value = "img_url")
+    private String imgUrl;
+
+    /**
+     * 1菜品ID
+     */
+    @TableField(value = "food_sku_id")
+    private String foodSkuId;
+
+    /**
      * 开始时间
      */
     @TableField(value = "start_time")
@@ -59,4 +72,16 @@ public class MerchantRecharge implements Serializable {
      */
     @TableField(value = "end_time")
     private LocalDateTime endTime;
+
+    /**
+     * 创建时间
+     */
+    @TableField(value = "create_time")
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField(value = "update_time")
+    private Date updateTime;
 }

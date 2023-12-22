@@ -46,6 +46,18 @@ public class Report implements Serializable {
     private String proofText;
 
     /**
+     * 0：待处理，1：已处理
+     */
+    @TableField(value = "status")
+    private Integer status;
+
+    /**
+     * 扣分
+     */
+    @TableField(value = "deduction")
+    private Double deduction;
+
+    /**
      * 证据图片链接
      */
     @TableField(value = "proof_img_url")

@@ -50,6 +50,12 @@ public class UserController  {
 
     }
 
+    @ApiOperation("登录")
+    @PostMapping("/loginByTest")
+    public R loginByTest(String username,String password) {
+            return userService.loginByTest(username,password);
+    }
+
     @ApiOperation("校验token是否过期接口")
     @GetMapping("/check")
     public R userTokencheck(@RequestHeader("token") String token){
