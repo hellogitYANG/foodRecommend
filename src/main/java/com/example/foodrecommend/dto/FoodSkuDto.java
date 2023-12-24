@@ -8,6 +8,13 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FoodSkuDto extends FoodSku {
-    // 推荐值 = 菜品销量 * 商家的评分
-    private double ScoreWeightSales;
+    /**
+     * 商家评星
+     */
+    private Double star;
+
+    /**
+     * 推荐值 = 菜品销量 * 商家的评分
+     */
+    private Double scoreWeightSales;
 }

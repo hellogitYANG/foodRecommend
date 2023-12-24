@@ -1,24 +1,17 @@
 package com.example.foodrecommend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.*;
+import com.example.foodrecommend.dto.FoodSkuDto;
 import com.example.foodrecommend.mapper.*;
 import com.example.foodrecommend.service.FoodSkuService;
 import com.example.foodrecommend.utils.CosineSimilarity;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.example.foodrecommend.beans.FoodSku;
-import com.example.foodrecommend.beans.Merchant;
-import com.example.foodrecommend.dto.FoodSkuDto;
-import com.example.foodrecommend.mapper.FoodSkuMapper;
-import com.example.foodrecommend.mapper.MerchantMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +21,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * @author 86176
@@ -404,37 +393,18 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
      */
     @Override
     public List<FoodSku> recommendBySalesAndScore(Integer n) {
-        // 查询数据库中的所有菜品
-        List<FoodSku> foodSkus = foodSkuMapper.selectList(null);
-        List<FoodSkuDto> foodSkuDtos = new ArrayList<>();
-        // 遍历每一个菜品并计算它们的推荐值
-        foodSkus.forEach(food -> {
-            // 创建一个FoodSkuDto对象
-            FoodSkuDto foodSkuDto = new FoodSkuDto();
-            // 将菜品对象（FoodSku）的属性复制到FoodSkuDto对象中
-            BeanUtils.copyProperties(food, foodSkuDto);
-            // 获取菜品对应商家的评分
-            String merchantId = food.getMerchantId();
-            // 查询对应的商家信息
-            Merchant merchant = merchantMapper.selectOne(new LambdaQueryWrapper<Merchant>().eq(Merchant::getId, merchantId));
-            double star = merchant.getStar();
-            // 计算推荐值，推荐值是菜品销量和商家评分的乘积
-            foodSkuDto.setScoreWeightSales(food.getSalesNum() * star);
-            // 将计算结果添加到foodSkuDtos列表中
-            foodSkuDtos.add(foodSkuDto);
-        });
-        // 将foodSkuDtos列表中的元素按照推荐值的大小进行降序排序
-        foodSkuDtos.sort(Comparator.comparing(FoodSkuDto::getScoreWeightSales).reversed());
-        // 根据传入的数量n，获取推荐值最大的前n个菜品
-        List<FoodSku> recommendedFoodSkus = new ArrayList<>();
-        // 当菜品总数大于n时，返回前n个菜品；否则，返回所有菜品
-        if (foodSkuDtos.size() > n) {
-            recommendedFoodSkus.addAll(foodSkuDtos.subList(0, n));  // 如果数量超过n，只返回前n个
-        } else {
-            recommendedFoodSkus.addAll(foodSkuDtos);  // 如果没有n个菜品，那么全部返回
+        // 从数据库获取菜品及其对应商家的评分信息，并计算出推荐值后根据推荐值降序排序
+        List<FoodSkuDto> foodSkuDtos = foodSkuMapper.selectFoodAndMerchant();
+
+        // 检查n是否为有效的正数
+        if (n == null || n <= 0) {
+            return new ArrayList<>(); // 如果n无效，返回空列表
         }
-        // 返回推荐的菜品列表
-        return recommendedFoodSkus;
+
+        // 使用流API处理列表并返回结果
+        return foodSkuDtos.stream()
+                .limit(n)
+                .collect(Collectors.toList());
     }
 
     @Override

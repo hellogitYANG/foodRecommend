@@ -8,6 +8,8 @@ import com.example.foodrecommend.utils.R;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.web.bind.annotation.RequestHeader;
 
+import java.util.List;
+
 /**
 * @author 86176
 * @description 针对表【user】的数据库操作Service
@@ -23,4 +25,6 @@ public interface UserService extends IService<User> {
     Page<FoodSku> getUserCollectPage(Page<FoodSku> page, User user);
 
     R loginByTest(String username, String password);
+
+    List<User> getUsersByInOpenId(List<String> list);
 }

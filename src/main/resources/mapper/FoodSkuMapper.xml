@@ -31,4 +31,17 @@
         ) max_sales ON f.merchant_id = max_sales.merchant_id AND f.sales_num = max_sales.max_sales_num
         ORDER BY f.sales_num DESC;
     </select>
+
+    <select id="selectFoodAndMerchant" resultType="com.example.foodrecommend.dto.FoodSkuDto">
+        SELECT
+            f.*,
+            m.star,
+            (f.sales_num * m.star) AS scoreWeightSales
+        FROM
+            food_sku f
+                JOIN
+            merchant m ON f.merchant_id = m.id
+        ORDER BY
+             scoreWeightSales DESC
+    </select>
 </mapper>

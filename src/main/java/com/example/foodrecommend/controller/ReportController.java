@@ -2,9 +2,15 @@ package com.example.foodrecommend.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.Report;
+import com.example.foodrecommend.beans.User;
+import com.example.foodrecommend.dto.ReportDto;
+import com.example.foodrecommend.dto.ReportResponseDto;
+import com.example.foodrecommend.interceptor.CheckTokenInterceptor;
 import com.example.foodrecommend.service.ReportService;
+import com.example.foodrecommend.utils.GetUserInfoByToken;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,6 +20,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import static com.example.foodrecommend.utils.R.success;
 
@@ -26,7 +33,6 @@ import static com.example.foodrecommend.utils.R.success;
 @RestController
 @Api(value = "举报表", tags = "举报表")
 @RequestMapping("report")
-@CrossOrigin
 public class ReportController {
     /**
      * 服务对象
@@ -53,13 +59,23 @@ public class ReportController {
      * @param report 查询实体
      * @return 所有数据
      */
+//    @ApiOperation("分页查询举报信息")
+//    @GetMapping
+//    public R selectAll(Page<Report> page, Report report) {
+//        // 获取Token
+//        String token = CheckTokenInterceptor.getToken();
+//        User user = GetUserInfoByToken.parseToken(token);
+//        // 设置用户ID
+//        report.setUserId(user.getOpenId());
+//        return success(this.reportService.page(page, new QueryWrapper<>(report)));
+//    }
     @ApiOperation("分页查询举报信息")
     @GetMapping
-    public R selectAll(Page<Report> page, Report report) {
-        Page<Report> page1 = this.reportService.page(page, new QueryWrapper<>(report));
-        return success(this.reportService.page(page, new QueryWrapper<>(report)));
+    public R<IPage<ReportResponseDto>> selectAll(@RequestParam Map<String, Object> params) {
+        // 设置用户I
+        IPage<ReportResponseDto> page = this.reportService.pageByParams(params);
+        return success(null , page);
     }
-
     /**
      * 通过主键查询单条数据
      *
@@ -75,13 +91,15 @@ public class ReportController {
     /**
      * 新增数据
      *
-     * @param report 实体对象
+     * @param reportDto 实体对象
      * @return 新增结果
      */
     @ApiOperation("新增单条数据")
     @PostMapping
-    public R insert(@RequestBody Report report) {
-        return success(this.reportService.save(report));
+    public R insert(@RequestBody ReportDto reportDto) {
+        this.reportService.report(reportDto);
+
+        return success("投诉成功" , null);
     }
 
     /**
@@ -96,12 +114,6 @@ public class ReportController {
         return success(this.reportService.updateById(report));
     }
 
-    @ApiOperation("通过实体类主键处理单条数据")
-    @PutMapping("/chuli")
-    public R updateByChuli(@RequestBody Report report) {
-        return success(this.reportService.updateByChuli(report));
-    }
-
     /**
      * 删除数据
      *
@@ -112,16 +124,6 @@ public class ReportController {
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.reportService.removeByIds(idList));
-    }
-
-    /**
-     * 删除数据
-
-     */
-    @ApiOperation("根据主键id删除数据")
-    @DeleteMapping("{id}")
-    public R deleteById(@PathVariable Serializable id) {
-        return success(this.reportService.removeById(id));
     }
 }
 

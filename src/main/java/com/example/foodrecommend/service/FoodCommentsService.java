@@ -1,7 +1,11 @@
 package com.example.foodrecommend.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.foodrecommend.beans.FoodComments;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.foodrecommend.dto.FoodCommentsResponseDto;
+
+import java.util.Map;
 
 /**
  * @author 86176
@@ -10,4 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface FoodCommentsService extends IService<FoodComments> {
     public int InsertByFullOrder(FoodComments foodComments,String token);
+
+    IPage<FoodCommentsResponseDto> pageByParams(Map<String, Object> params);
 }

@@ -1,7 +1,8 @@
 package com.example.foodrecommend.mapper;
 
-import com.example.foodrecommend.beans.FoodSku;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.foodrecommend.beans.FoodSku;
+import com.example.foodrecommend.dto.FoodSkuDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.List;
 @Mapper
 public interface FoodSkuMapper extends BaseMapper<FoodSku> {
     List<FoodSku> selectSalesNumByOneMerchant();
+
+    List<FoodSkuDto> selectFoodAndMerchant();
 
 }
 

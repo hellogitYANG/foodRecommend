@@ -1,5 +1,6 @@
 package com.example.foodrecommend.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.service.MerchantService;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
 * @author 86176
@@ -25,6 +27,13 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant>
     public Merchant selectMerchant(String username) {
         Merchant merchant = merchantMapper.selectMerchant(username);
         return merchant;
+    }
+
+    @Override
+    public List<Merchant> getMerchantByIds(List<String> merchantIds) {
+        LambdaQueryWrapper<Merchant> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Merchant::getId , merchantIds);
+        return this.list(queryWrapper);
     }
 }
 
