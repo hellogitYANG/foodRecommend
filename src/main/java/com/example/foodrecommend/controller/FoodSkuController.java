@@ -122,10 +122,10 @@ public class FoodSkuController {
 
     @ApiOperation("获取家乡美食")
     @GetMapping("/getLocationFood")
-    public R getLocationFood() {
+    public R getLocationFood(Page<FoodSku> page) {
         String token = CheckTokenInterceptor.getToken();
         User user = GetUserInfoByToken.parseToken(token);
-        return success(this.foodSkuService.getLocationFood(user.getOpenId()));
+        return success(this.foodSkuService.getLocationFood(page,user.getOpenId()));
     }
     /**
      * 通过主键查询单条数据

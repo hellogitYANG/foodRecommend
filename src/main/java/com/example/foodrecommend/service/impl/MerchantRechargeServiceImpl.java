@@ -10,6 +10,7 @@ import com.example.foodrecommend.service.MerchantRechargeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +48,12 @@ public class MerchantRechargeServiceImpl extends ServiceImpl<MerchantRechargeMap
     @Override
     public List<Merchant> getMerchantsWithAdSpacePurchase() {
         List<String> merchantIds = getMerchantsByRechargeFunction(PURCHASE_ADVERTISING_SPACE);
-        return merchantMapper.selectBatchIds(merchantIds);
+        if (merchantIds.size()>0){
+            return merchantMapper.selectBatchIds(merchantIds);
+        }else {
+            return new ArrayList<Merchant>();
+        }
+
     }
 
     /**
@@ -63,10 +69,12 @@ public class MerchantRechargeServiceImpl extends ServiceImpl<MerchantRechargeMap
 
     private List<String> getMerchantsByRechargeFunction(Integer rechargeFunction) {
         List<MerchantRecharge> merchantRecharges = merchantRechargeMapper.selectList(new LambdaQueryWrapper<MerchantRecharge>()
-                .eq(MerchantRecharge::getRechargeType, rechargeFunction));
+                .eq(MerchantRecharge::getRechargeType, rechargeFunction)
+                .le(MerchantRecharge::getStartTime, LocalDateTime.now())
+                .ge(MerchantRecharge::getEndTime,LocalDateTime.now()));
         List<String> merchantIds = new ArrayList<>();
         merchantRecharges.forEach(merchantRecharge -> {
-            String id = merchantRecharge.getId();
+            String id = merchantRecharge.getMerchantId();
             merchantIds.add(id);
         });
         return merchantIds;

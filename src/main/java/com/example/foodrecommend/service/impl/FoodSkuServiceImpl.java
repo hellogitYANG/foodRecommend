@@ -46,6 +46,9 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     private MerchantRechargeMapper merchantRechargeMapper;
     @Resource
     private MerchantMapper merchantMapper;
+
+    @Resource
+    private DgtxPlacesMapper dgtxPlacesMapper;
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -206,18 +209,25 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         //获取用户口味转为Map
         Map<String,String> userMap = JSONUtil.toBean(user.getFoodStats(), Map.class);
         for (FoodSku food : allFood) {
-            //获取菜品口味转为Map
-            Map<String,String> foodMap=JSONUtil.toBean(food.getFoodStats(), Map.class);
-            //移除掉地区的影响
-            if (foodMap.containsKey("地区")){
+            try {
+                // 获取菜品口味转为Map，处理可能的转换异常
+                Map<String,String> foodMap = JSONUtil.toBean(food.getFoodStats(), Map.class);
+
+                // 移除掉地区的影响
                 foodMap.remove("地区");
-            }
-            //计算余弦值
-            double similarity = CosineSimilarity.calculateCosineSimilarity(userMap,foodMap,dictionaryMap);
-//            System.out.println(similarity);
-            // 假设设定相似度阈值为0.5，可根据实际情况调整
-            if (similarity > 0.70) {
-                recommendedFood.add(food);
+
+                // 计算余弦值
+                double similarity = CosineSimilarity.calculateCosineSimilarity(userMap, foodMap, dictionaryMap);
+
+                // 根据相似度阈值进行判断
+//                if (similarity > 0.70) {
+                    recommendedFood.add(food);
+//                }
+            } catch (Exception e) {
+                // 记录日志信息
+                System.err.println("Error processing food item: " + food.getName() + " - Exception: " + e.getMessage());
+                // 跳过当前引发异常的数据条目
+                continue;
             }
         }
 
@@ -408,29 +418,15 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     }
 
     @Override
-    public List<FoodSku> getLocationFood(String openId) {
+    public Page<FoodSku> getLocationFood(Page<FoodSku> page,String openId) {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id",openId));
-        //每家只能推一个
-        List<FoodSku> foodSkus = foodSkuMapper.selectList(new QueryWrapper<FoodSku>().orderByDesc("sales_num"));
-
-        ArrayList<FoodSku> locationFood = new ArrayList<>();
         String[] split = user.getPhoneLocation().split(",");
+        //查出这个地区
+        DgtxPlaces cname = dgtxPlacesMapper.selectOne(new QueryWrapper<DgtxPlaces>().eq("cname", split[1]));
 
-        A:for (int i = 0; i < foodSkus.size(); i++) {
-            if (foodSkus.get(i).getFoodStats().contains(split[0]) || foodSkus.get(i).getFoodStats().contains(split[1])){
-                //如果已经有此家店铺的食品，直接跳过此食品
-                for (FoodSku foodSku : locationFood) {
-                    if (foodSku.getMerchantId().equals(foodSkus.get(i).getMerchantId())){
-                        continue A;
-                    }
-                }
-                locationFood.add(foodSkus.get(i));
-            }
-            if (i==4){
-                break;
-            }
-        }
-        return locationFood;
+        Page<FoodSku> foodSkuPage = foodSkuMapper.selectPage(page, new QueryWrapper<FoodSku>().eq("place_id", cname.getId()).orderByDesc("sales_num"));
+
+        return foodSkuPage;
 
     }
 

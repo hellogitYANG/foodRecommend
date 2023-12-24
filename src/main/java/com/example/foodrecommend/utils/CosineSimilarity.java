@@ -26,6 +26,11 @@ public class CosineSimilarity {
 
         // 遍历共同键
         for (String key : commonKeys) {
+            // 检查键是否存在于两个字典中
+            if (vector1Numeric.get(key)==null || vector2Numeric.get(key)==null) {
+                // 如果任何一个字典中不存在键，跳过当前迭代
+                continue;
+            }
             int value1 = vector1Numeric.get(key);
             int value2 = vector2Numeric.get(key);
 

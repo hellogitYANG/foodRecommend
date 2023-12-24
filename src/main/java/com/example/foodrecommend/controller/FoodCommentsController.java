@@ -39,8 +39,6 @@ public class FoodCommentsController  {
     /**
      * 分页查询所有数据
      *
-     * @param page 分页对象
-     * @param foodComments 查询实体
      * @return 所有数据
      */
     @ApiOperation("分页查询评论信息")

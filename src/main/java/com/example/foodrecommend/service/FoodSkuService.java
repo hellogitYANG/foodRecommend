@@ -26,7 +26,7 @@ public interface FoodSkuService extends IService<FoodSku> {
      */
     List<FoodSku> recommendBySalesAndScore(Integer n);
 
-    List<FoodSku>  getLocationFood(String openId);
+    Page<FoodSku>  getLocationFood(Page<FoodSku> page,String openId);
 
     Map<String,Object> getSkuInfo(User user, Serializable id);
 
