@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.User;
+import com.example.foodrecommend.dto.FoodSkuRecommend;
 
 import java.io.Serializable;
 import java.util.*;
@@ -16,7 +17,7 @@ import java.util.List;
  * @createDate 2023-11-13 00:14:57
  */
 public interface FoodSkuService extends IService<FoodSku> {
-    Page<Map<String, Collection<FoodSku>>> getYouWantEat(Page page, String openId);
+    Page<FoodSkuRecommend> getYouWantEat(Page page, String openId);
 
     /**
      * 通过销量和评分推荐菜品

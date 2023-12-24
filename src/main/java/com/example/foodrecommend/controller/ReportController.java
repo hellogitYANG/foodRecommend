@@ -33,6 +33,7 @@ import static com.example.foodrecommend.utils.R.success;
 @RestController
 @Api(value = "举报表", tags = "举报表")
 @RequestMapping("report")
+@CrossOrigin
 public class ReportController {
     /**
      * 服务对象
@@ -59,16 +60,16 @@ public class ReportController {
      * @param report 查询实体
      * @return 所有数据
      */
-//    @ApiOperation("分页查询举报信息")
-//    @GetMapping
-//    public R selectAll(Page<Report> page, Report report) {
+    @ApiOperation("管理端分页查询举报信息")
+    @GetMapping("/page")
+    public R selectAll(Page<Report> page, Report report) {
 //        // 获取Token
 //        String token = CheckTokenInterceptor.getToken();
 //        User user = GetUserInfoByToken.parseToken(token);
 //        // 设置用户ID
 //        report.setUserId(user.getOpenId());
-//        return success(this.reportService.page(page, new QueryWrapper<>(report)));
-//    }
+        return success(this.reportService.page(page, new QueryWrapper<>(report)));
+    }
     @ApiOperation("分页查询举报信息")
     @GetMapping
     public R<IPage<ReportResponseDto>> selectAll(@RequestParam Map<String, Object> params) {
@@ -114,6 +115,11 @@ public class ReportController {
         return success(this.reportService.updateById(report));
     }
 
+    @ApiOperation("管理端通过实体类主键修改单条数据")
+    @PutMapping("/chuli")
+    public R updateByChuli(@RequestBody Report report) {
+        return success(this.reportService.updateByChuli(report));
+    }
     /**
      * 删除数据
      *

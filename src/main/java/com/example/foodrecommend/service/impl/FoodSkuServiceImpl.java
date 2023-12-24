@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.*;
 import com.example.foodrecommend.dto.FoodSkuDto;
+import com.example.foodrecommend.dto.FoodSkuRecommend;
 import com.example.foodrecommend.mapper.*;
 import com.example.foodrecommend.service.FoodSkuService;
 import com.example.foodrecommend.utils.CosineSimilarity;
@@ -58,7 +59,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     static LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
     static LocalDateTime now = LocalDateTime.now();
     @Override
-    public Page<Map<String, Collection<FoodSku>>> getYouWantEat(Page page,String openId) {
+    public Page<FoodSkuRecommend> getYouWantEat(Page page,String openId) {
         //第一页清空已显示的数据
         if(page.getCurrent()==1){
             clearUserViewedFoodSkus(openId);
@@ -74,6 +75,17 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         List<FoodSku> kouWeiList = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds,num);
         //去重
         kouWeiList.forEach(foodSku -> {
+            String id = foodSku.getId();
+            if (id != null) {
+                shownFoodIds.add(id);
+            }
+        });
+
+        //用户协同三个
+        int num2=3;
+        List<FoodSku> xietongList = getXietong(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,ordersMapper,shownFoodIds,num2);
+        //去重
+        xietongList.forEach(foodSku -> {
             String id = foodSku.getId();
             if (id != null) {
                 shownFoodIds.add(id);
@@ -150,18 +162,69 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             });
 
         //收集起来并返回
-        HashSet<FoodSku> allFoodSku = new HashSet<>();
-        allFoodSku.addAll(kouWeiList);
-        allFoodSku.addAll(foodSkuList);
-        allFoodSku.addAll(liuLan);
-        allFoodSku.addAll(haoPing);
-        allFoodSku.addAll(foodSkus);
+        List<FoodSkuRecommend> allFoodSku = new ArrayList<>();
+        //口味3
+        for (FoodSku foodSku : kouWeiList) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("口味");
+            allFoodSku.add(foodSkuRecommend);
+        }
+        //常买3
+        for (FoodSku foodSku : foodSkuList) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("常买");
+            allFoodSku.add(foodSkuRecommend);
+        }
+        //广告3
+        for (FoodSku foodSku : guanggao) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("广告");
+            allFoodSku.add(foodSkuRecommend);
+        }
+        //协同3
+        for (FoodSku foodSku : xietongList) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("协同");
+            allFoodSku.add(foodSkuRecommend);
+        }
+        //浏览2
+        for (FoodSku foodSku : liuLan) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("浏览");
+            allFoodSku.add(foodSkuRecommend);
+        }
+        //好评2
+        for (FoodSku foodSku : haoPing) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("好评");
+            allFoodSku.add(foodSkuRecommend);
+        }
+        //收藏2
+        for (FoodSku foodSku : foodSkus) {
+            FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+            BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+            foodSkuRecommend.setStatus("收藏");
+            allFoodSku.add(foodSkuRecommend);
+        }
+
 
         //如果推荐不足n(15个)个从口味余弦里面选
-        if (allFoodSku.size()<12){
-            int size=15-allFoodSku.size();
+        if (allFoodSku.size()<18){
+            int size=18-allFoodSku.size();
             List<FoodSku> newkouwei = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds,size);
-            allFoodSku.addAll(newkouwei);
+            //补充size
+            for (FoodSku foodSku : newkouwei) {
+                FoodSkuRecommend foodSkuRecommend = new FoodSkuRecommend();
+                BeanUtil.copyProperties(foodSku,foodSkuRecommend);
+                foodSkuRecommend.setStatus("口味");
+                allFoodSku.add(foodSkuRecommend);
+            }
             //去重
             newkouwei.forEach(foodSku -> {
                 String id = foodSku.getId();
@@ -171,22 +234,11 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             });
         }
 
-        HashMap<String, Collection<FoodSku>> stringListHashMap = new HashMap<>();
-        stringListHashMap.put("口味",kouWeiList);//默认3个
-        stringListHashMap.put("常买",foodSkuList);//默认3个
-        stringListHashMap.put("广告",guanggao);//默认3个，不在汇总里
-        stringListHashMap.put("浏览",liuLan);//默认2个
-        stringListHashMap.put("好评",haoPing);//默认2个
-        stringListHashMap.put("收藏",foodSkus);//默认2个
-
-        stringListHashMap.put("汇总",allFoodSku);
-
         addUserViewedFoodSkus(openId,shownFoodIds);
 
-        Page<Map<String, Collection<FoodSku>>> mapPage = new Page<>();
-        ArrayList<Map<String, Collection<FoodSku>>> maps = new ArrayList<>();
-        maps.add(stringListHashMap);
-        mapPage.setRecords(maps);
+        Page<FoodSkuRecommend> mapPage = new Page<>();
+        mapPage.setRecords(allFoodSku);
+        mapPage.setTotal(allFoodSku.size());
         return mapPage;
     }
     public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper, List<String> shownFoodIds,int num) {
@@ -360,6 +412,61 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         return foodSkuMapper.selectList(new QueryWrapper<FoodSku>().in("id",skuIds));
     }
 
+    //协同过滤
+    public static List<FoodSku> getXietong(String openId, BaseMapper<User> userMapper, BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper,BaseMapper<Orders> ordersMapper, List<String> shownFoodIds,int num){
+        //存储相似用户
+        ArrayList<User> usersList = new ArrayList<>();
+        //获取当前用户口味
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
+        Map<String,String> userMap = JSONUtil.toBean(user.getFoodStats(), Map.class);
+        //获取口味字典
+        List<FoodStatsDictionary> statsDictionaryList = foodStatsDictionaryMapper.selectList(null);
+        Map<String, Integer> dictionaryMap = statsDictionaryList.stream()
+                .collect(Collectors.toMap(FoodStatsDictionary::getName, dictionary -> Integer.parseInt(String.valueOf(dictionary.getId()))));
+
+        //查询全部用户，找出最相似口味的num个用户
+        List<User> users = userMapper.selectList(null);
+        for (User u : users) {
+            if (!u.getOpenId().equals(openId)) { // 排除当前用户
+                usersList.add(u);
+            }
+        }
+        Collections.sort(usersList, Comparator.comparingDouble(u -> {
+            // 获取每个食品的相似度
+            Map<String, String> uMap = JSONUtil.toBean(u.getFoodStats(), Map.class);
+            double similarity = CosineSimilarity.calculateCosineSimilarity(userMap, uMap, dictionaryMap);
+            return -similarity; // 从高到低排序
+        }));
+        usersList.subList(0, Math.min(usersList.size(), num));
+
+        // 存储推荐的食品
+        List<FoodSku> recommendedFood = new ArrayList<>();
+        // 查询每个相似用户最常购买的食品
+        for (User u : usersList) {
+            // 假设 Order 有一个 food_sku_id 字段和一个 open_id 字段
+            // 查询该用户购买次数最多的食品
+            List<Map<String, Object>> mostPurchased = ordersMapper.selectMaps(new QueryWrapper<Orders>()
+                    .select("food_sku_id, COUNT(*) as purchase_count")
+                    .eq("user_id", u.getOpenId())
+                    .groupBy("food_sku_id")
+                    .orderByDesc("purchase_count")
+                    .notIn("food_sku_id", shownFoodIds)
+                    .last("LIMIT 1"));
+
+            if (!mostPurchased.isEmpty()) {
+                // 获取购买次数最多的食品ID
+                String foodSkuId = (String) mostPurchased.get(0).get("food_sku_id");
+                // 根据食品ID获取食品详情
+                FoodSku foodSku = foodSkuMapper.selectById(foodSkuId);
+                recommendedFood.add(foodSku);
+                // 将该食品ID添加到已展示列表中，避免重复推荐
+                shownFoodIds.add(foodSkuId);
+            }
+        }
+
+        return recommendedFood;
+
+    }
 
 
     //广告部分计算权重随机返回指定条数充值记录
