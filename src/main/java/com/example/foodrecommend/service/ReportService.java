@@ -1,7 +1,10 @@
 package com.example.foodrecommend.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.foodrecommend.beans.Report;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.foodrecommend.dto.ReportDto;
+import com.example.foodrecommend.dto.ReportResponseDto;
 
 import java.util.Map;
 
@@ -21,4 +24,8 @@ public interface ReportService extends IService<Report> {
     Boolean handleAuditAndDeductScore(Map map);
 
     int updateByChuli(Report report);
+
+    IPage<ReportResponseDto> pageByParams(Map<String, Object> params);
+
+    void report(ReportDto reportDto);
 }

@@ -2,8 +2,10 @@ package com.example.foodrecommend.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.FoodComments;
+import com.example.foodrecommend.dto.FoodCommentsResponseDto;
 import com.example.foodrecommend.service.FoodCommentsService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import static com.example.foodrecommend.utils.R.failure;
 import static com.example.foodrecommend.utils.R.success;
@@ -41,10 +44,15 @@ public class FoodCommentsController  {
      * @return 所有数据
      */
     @ApiOperation("分页查询评论信息")
-    @PostMapping("/page/foodComments")
-    public R selectAll(Page<FoodComments> page,@RequestBody FoodComments foodComments) {
-        return success(this.foodCommentsService.page(page, new QueryWrapper<>(foodComments)));
+    @GetMapping
+    public R<IPage<FoodCommentsResponseDto>> selectAll(@RequestParam Map<String , Object> params) {
+        IPage<FoodCommentsResponseDto> page = this.foodCommentsService.pageByParams(params);
+        return success( null, page);
     }
+
+
+
+
 
     /**
      * 通过主键查询单条数据

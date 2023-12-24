@@ -2,10 +2,12 @@ package com.example.foodrecommend.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.foodrecommend.beans.Report;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.dto.ReportDto;
+import com.example.foodrecommend.dto.ReportResponseDto;
 import com.example.foodrecommend.interceptor.CheckTokenInterceptor;
 import com.example.foodrecommend.service.ReportService;
 import com.example.foodrecommend.utils.GetUserInfoByToken;
@@ -57,17 +59,23 @@ public class ReportController {
      * @param report 查询实体
      * @return 所有数据
      */
+//    @ApiOperation("分页查询举报信息")
+//    @GetMapping
+//    public R selectAll(Page<Report> page, Report report) {
+//        // 获取Token
+//        String token = CheckTokenInterceptor.getToken();
+//        User user = GetUserInfoByToken.parseToken(token);
+//        // 设置用户ID
+//        report.setUserId(user.getOpenId());
+//        return success(this.reportService.page(page, new QueryWrapper<>(report)));
+//    }
     @ApiOperation("分页查询举报信息")
     @GetMapping
-    public R selectAll(Page<Report> page, Report report) {
-        // 获取Token
-        String token = CheckTokenInterceptor.getToken();
-        User user = GetUserInfoByToken.parseToken(token);
-        // 设置用户ID
-        report.setUserId(user.getOpenId());
-        return success(this.reportService.page(page, new QueryWrapper<>(report)));
+    public R<IPage<ReportResponseDto>> selectAll(@RequestParam Map<String, Object> params) {
+        // 设置用户I
+        IPage<ReportResponseDto> page = this.reportService.pageByParams(params);
+        return success(null , page);
     }
-
     /**
      * 通过主键查询单条数据
      *
@@ -89,19 +97,9 @@ public class ReportController {
     @ApiOperation("新增单条数据")
     @PostMapping
     public R insert(@RequestBody ReportDto reportDto) {
-        // 创建文字拼接对象，使用“,”拼接
-        StringJoiner sj = new StringJoiner(",");
-        // 获取Token
-        String token = CheckTokenInterceptor.getToken();
-        User user = GetUserInfoByToken.parseToken(token);
+        this.reportService.report(reportDto);
 
-        // 遍历图片列表，组装图片路径字符串，添加到ProofImgUrl属性
-        reportDto.getImgs().forEach(sj::add);
-        reportDto.setProofImgUrl(sj.toString());
-        // 设置用户ID
-        reportDto.setUserId(user.getOpenId());
-
-        return success(this.reportService.save(reportDto));
+        return success("投诉成功" , null);
     }
 
     /**

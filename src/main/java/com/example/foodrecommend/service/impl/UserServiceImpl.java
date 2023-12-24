@@ -2,6 +2,7 @@ package com.example.foodrecommend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -164,6 +165,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return success(usermap);
         }else {
             return failure(1001,"错误");
+        }
+    }
+
+    @Override
+    public List<User> getUsersByInOpenId(List<String> list) {
+        if (list == null) {
+            return null;
+        }else {
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(User::getOpenId , list);
+            return this.list(queryWrapper);
         }
     }
 

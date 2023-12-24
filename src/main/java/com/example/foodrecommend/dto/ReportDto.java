@@ -1,20 +1,20 @@
 package com.example.foodrecommend.dto;
 
 import com.example.foodrecommend.beans.Report;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class ReportDto extends Report {
+@Data
+public class ReportDto {
     /**
      * 图片路径列表
      */
-    private List<String> imgs;
+    private List<String> images;
+
+    private String desc;
+
+    private String merchantId;
+
+    private String merchantIdEd;
 }
