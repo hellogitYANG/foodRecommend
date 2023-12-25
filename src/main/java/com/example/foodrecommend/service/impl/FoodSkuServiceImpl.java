@@ -244,6 +244,10 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper, List<String> shownFoodIds,int num) {
         //用户信息和全部食品和口味字典
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
+        //如果口味为空设置单个口味上去，也影响不到余弦计算
+        if(user.getFoodStats().isEmpty()){
+            user.setFoodStats("{\"口味\":\"\"}");
+        }
         // 排除已展示的菜品
         QueryWrapper<FoodSku> q = new QueryWrapper<>();
         if (shownFoodIds != null && !shownFoodIds.isEmpty()) {
@@ -418,6 +422,10 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         ArrayList<User> usersList = new ArrayList<>();
         //获取当前用户口味
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
+        //如果口味为空设置单个口味上去，也影响不到余弦计算
+        if(user.getFoodStats().isEmpty()){
+            user.setFoodStats("{\"口味\":\"\"}");
+        }
         Map<String,String> userMap = JSONUtil.toBean(user.getFoodStats(), Map.class);
         //获取口味字典
         List<FoodStatsDictionary> statsDictionaryList = foodStatsDictionaryMapper.selectList(null);
@@ -437,12 +445,12 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             double similarity = CosineSimilarity.calculateCosineSimilarity(userMap, uMap, dictionaryMap);
             return -similarity; // 从高到低排序
         }));
-        usersList.subList(0, Math.min(usersList.size(), num));
+        List<User> newUserList = usersList.subList(0, Math.min(usersList.size(), num));
 
         // 存储推荐的食品
         List<FoodSku> recommendedFood = new ArrayList<>();
         // 查询每个相似用户最常购买的食品
-        for (User u : usersList) {
+        for (User u : newUserList) {
             // 假设 Order 有一个 food_sku_id 字段和一个 open_id 字段
             // 查询该用户购买次数最多的食品
             List<Map<String, Object>> mostPurchased = ordersMapper.selectMaps(new QueryWrapper<Orders>()
@@ -527,6 +535,9 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     @Override
     public Page<FoodSku> getLocationFood(Page<FoodSku> page,String openId) {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id",openId));
+        if(user.getPhoneLocation().isEmpty()){
+            return new Page<>();
+        }
         String[] split = user.getPhoneLocation().split(",");
         //查出这个地区
         DgtxPlaces cname = dgtxPlacesMapper.selectOne(new QueryWrapper<DgtxPlaces>().eq("cname", split[1]));
@@ -541,17 +552,24 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     public Map<String, Object> getSkuInfo(User user, Serializable id) {
         //查出用户收藏
         User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
-        String[] split = openUser.getCollectFoodSku().split(",");
-        ArrayList<String> collectList = new ArrayList<>(Arrays.asList(split));
         //查出菜品信息
         FoodSku foodSku = foodSkuMapper.selectById(id);
-        Map<String, Object> map = BeanUtil.beanToMap(foodSku);
-        if (collectList.contains(id)){
-            map.put("currentUserIsCollect",true);
-        }else {
+        if(openUser.getCollectFoodSku()==null || openUser.getCollectFoodSku().isEmpty()){
+            Map<String, Object> map = BeanUtil.beanToMap(foodSku);
             map.put("currentUserIsCollect",false);
+            return map;
+        }else {
+            String[] split = openUser.getCollectFoodSku().split(",");
+            ArrayList<String> collectList = new ArrayList<>(Arrays.asList(split));
+            Map<String, Object> map = BeanUtil.beanToMap(foodSku);
+            if (collectList.contains(id)){
+                map.put("currentUserIsCollect",true);
+            }else {
+                map.put("currentUserIsCollect",false);
+            }
+            return map;
         }
-        return map;
+
     }
 
     @Override

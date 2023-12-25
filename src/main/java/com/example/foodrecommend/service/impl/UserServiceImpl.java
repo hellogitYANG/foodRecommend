@@ -66,30 +66,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         System.out.println(code);
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id",openid));
-
-
+        //每次都会判断手机号和地址，如果空就加上
         if (user != null) {
+            if(user.getPhoneLocation().isEmpty() || user.getPhone().isEmpty()){
+                Map<String, Object> phoneInfo = getPhoneInfo(code);
+                user.setPhone(String.valueOf(phoneInfo.get("phoneNumber")));
+                user.setPhoneLocation(GetPhoneInfo.getMobileLocation(String.valueOf(phoneInfo.get("phoneNumber"))));
+                userMapper.updateById(user);
+            }
+            //如果口味为空设置单个口味上去，也影响不到余弦计算
+            if(user.getFoodStats().isEmpty()){
+                user.setFoodStats("{\"口味\":\"辣味\"}");
+            }
             String token = getToken(user);
             Map<String, Object> usermap = BeanUtil.beanToMap(user);
             usermap.put("token",token);
             return success(usermap);
         } else {
             //如果没有就查出手机号并创建用户
-            //查手机号
-            String token = SendMessage.token;
-            String phoneurl = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=" + token;
-            //请求头
-            HttpHeaders requestHeaders = new HttpHeaders();
-            requestHeaders.add("Content-Type", "application/json; charset=UTF-8");
-            //请求参数
-            Map map = new HashMap<String, String>();
-            map.put("code", code);
-            HttpEntity httpEntity = new HttpEntity<>(map, requestHeaders);
-            //获取手机信息
-            ResponseEntity<Map> response2 = restTemplate.postForEntity(phoneurl, httpEntity, Map.class);
-            Map<String, Object> phoneInfo = (Map<String, Object>) response2.getBody().get("phone_info");
-            //新增信息
-            User newuser = new User(openid, "傻逼", String.valueOf(phoneInfo.get("phoneNumber")), null, 0, 0, null, GetPhoneInfo.getMobileLocation(String.valueOf(phoneInfo.get("phoneNumber"))));
+            //获取手机号信息
+            Map<String, Object> phoneInfo = getPhoneInfo(code);
+
+            String token;
+            //新增信息,用户口味先设置一个，反正也不会影响余弦计算
+            User newuser = new User(openid, "傻逼", String.valueOf(phoneInfo.get("phoneNumber")), "{\"口味\":\"\"}", 0, 0, null, GetPhoneInfo.getMobileLocation(String.valueOf(phoneInfo.get("phoneNumber"))));
             int insert = userMapper.insert(newuser);
             if (insert > 0) {
                 token = getToken(newuser);
@@ -101,6 +101,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return failure(1001, "登录错误");
     }
 
+    private Map<String, Object> getPhoneInfo(String code) {
+        //查手机号
+        String token = SendMessage.token;
+        String phoneurl = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=" + token;
+        //请求头
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add("Content-Type", "application/json; charset=UTF-8");
+        //请求参数
+        Map map = new HashMap<String, String>();
+        map.put("code", code);
+        HttpEntity httpEntity = new HttpEntity<>(map, requestHeaders);
+        //获取手机信息
+        ResponseEntity<Map> response2 = restTemplate.postForEntity(phoneurl, httpEntity, Map.class);
+        Map<String, Object> phoneInfo = (Map<String, Object>) response2.getBody().get("phone_info");
+        return phoneInfo;
+    }
+
     @Override
     public User getUserInfoByToken(String token) {
         return GetUserInfoByToken.parseToken(token);
@@ -109,26 +126,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public int addCollectFoodSku(User user, String foodSkuId) {
         User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
-        String[] split = openUser.getCollectFoodSku().split(",");
-//        List<String> collect = Arrays.asList(split);不能用Arrays.asList来转换，会报错
-        List<String> collect = new ArrayList<>(Arrays.asList(split));
-        if(collect.contains(foodSkuId)){
-            collect.remove(new String(foodSkuId));
+        if(openUser.getCollectFoodSku()==null ||openUser.getCollectFoodSku().isEmpty()){
+            openUser.setCollectFoodSku(foodSkuId);
+            return userMapper.updateById(openUser);
         }else {
-            collect.add(foodSkuId);
+            String[] split = openUser.getCollectFoodSku().split(",");
+            //List<String> collect = Arrays.asList(split);不能用Arrays.asList来转换，会报错
+            List<String> collect = new ArrayList<>(Arrays.asList(split));
+            if(collect.contains(foodSkuId)){
+                collect.remove(new String(foodSkuId));
+            }else {
+                collect.add(foodSkuId);
+            }
+            String updateCollect = collect.stream().map(String::valueOf).collect(Collectors.joining(","));
+            openUser.setCollectFoodSku(updateCollect);
+
+            return userMapper.updateById(openUser);
         }
-        String updateCollect = collect.stream().map(String::valueOf).collect(Collectors.joining(","));
-        openUser.setCollectFoodSku(updateCollect);
 
-        userMapper.updateById(openUser);
 
-        return 0;
     }
 
     @Override
     public Page<FoodSku> getUserCollectPage(Page<FoodSku> page, User user) {
         User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
-
+        if(openUser.getCollectFoodSku()==null || openUser.getCollectFoodSku().isEmpty()){
+            return new Page<>();
+        }
         String collects = openUser.getCollectFoodSku();
         List<String> allCollects = Arrays.asList(collects.split(","));
 
@@ -190,6 +214,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         map.put("phone", user.getPhone());
         map.put("foodStats", user.getFoodStats());
         map.put("collectFoodSku", user.getCollectFoodSku());
+        map.put("phoneLocation", user.getPhoneLocation());
 
         System.out.println(map);
         String token = builder.setSubject("token")                     //主题，就是token中携带的数据

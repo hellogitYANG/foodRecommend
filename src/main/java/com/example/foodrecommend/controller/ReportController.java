@@ -68,7 +68,7 @@ public class ReportController {
 //        User user = GetUserInfoByToken.parseToken(token);
 //        // 设置用户ID
 //        report.setUserId(user.getOpenId());
-        return success(this.reportService.page(page, new QueryWrapper<>(report)));
+        return success(this.reportService.page(page, new QueryWrapper<>(report).orderByDesc("create_time")));
     }
     @ApiOperation("分页查询举报信息")
     @GetMapping

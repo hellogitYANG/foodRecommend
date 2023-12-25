@@ -46,7 +46,10 @@ public class GetPhoneInfo {
             Map<String, Object> phonemap = BeanUtil.beanToMap(showapiResBody);
             String prov = (String) phonemap.get("prov");
             String city = (String) phonemap.get("city");
-
+            //如果后面包含市，就去掉市
+            if (city != null && city.endsWith("市")) {
+                city = city.substring(0, city.length() - 1);
+            }
             return prov+","+city;
         } catch (Exception e) {
             e.printStackTrace();
