@@ -111,11 +111,12 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                     .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                     .limit(3)
                     .map(entry -> foodSkuMapper.selectById(entry.getKey()))
+                    .filter(Objects::nonNull) // 过滤掉空值，避免一些菜已经呗删除
                     .collect(Collectors.toList());
                     //去重
                     foodSkuList.forEach(foodSku -> {
-                        String id = foodSku.getId();
-                        if (id != null) {
+                        if (foodSku!=null && foodSku.getId() != null) {
+                            String id = foodSku.getId();
                             shownFoodIds.add(id);
                         }
                     });
@@ -320,6 +321,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(2)
                 .map(entry -> foodSkuMapper.selectById(entry.getKey()))
+                .filter(Objects::nonNull) // 过滤掉空值
                 .collect(Collectors.toList());
 
         return foodSkuList;
@@ -345,6 +347,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(2)
                 .map(entry -> foodSkuMapper.selectById(entry.getKey()))
+                .filter(Objects::nonNull) // 过滤掉空值
                 .collect(Collectors.toList());
 
         return foodSkuList;
@@ -466,9 +469,11 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                 String foodSkuId = (String) mostPurchased.get(0).get("food_sku_id");
                 // 根据食品ID获取食品详情
                 FoodSku foodSku = foodSkuMapper.selectById(foodSkuId);
-                recommendedFood.add(foodSku);
-                // 将该食品ID添加到已展示列表中，避免重复推荐
-                shownFoodIds.add(foodSkuId);
+                if(foodSku!=null){
+                    recommendedFood.add(foodSku);
+                    // 将该食品ID添加到已展示列表中，避免重复推荐
+                    shownFoodIds.add(foodSkuId);
+                }
             }
         }
 
@@ -580,6 +585,15 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         for (String s : split) {
             FoodStatsDictionary dictionary = foodStatsDictionaryMapper.selectList(new QueryWrapper<FoodStatsDictionary>().eq("name", s)).get(0);
             mapStats.put(dictionary.getStatsLevel(),dictionary.getName());
+        }
+        //获取所有类型,如果不存在此类型就设置为此类型的其他
+        List<Map<String, Object>> results = foodStatsDictionaryMapper.selectMaps(new QueryWrapper<FoodStatsDictionary>().select("stats_level").groupBy("stats_level"));
+        for (Map<String, Object> result : results) {
+            String statsLevel = (String)result.get("stats_level");
+            //如果不包含此类型，设置为此类型的其他
+            if(!mapStats.containsKey(statsLevel)){
+                mapStats.put(statsLevel,"其他"+"("+statsLevel+")");
+            }
         }
         String parseStats = JSONUtil.parse(mapStats).toString();
         foodSku.setFoodStats(parseStats);

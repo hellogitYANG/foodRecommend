@@ -104,6 +104,12 @@ public class MerchantRechargeController {
         return success(this.merchantRechargeService.getById(id));
     }
 
+
+    @ApiOperation("查询广告位")
+    @GetMapping("/getLunBo")
+    public R selectLunBo() {
+        return success(this.merchantRechargeService.list(new QueryWrapper<MerchantRecharge>().eq("recharge_type",2)));
+    }
     /**
      * 新增数据
      *
