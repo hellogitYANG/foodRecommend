@@ -1,7 +1,6 @@
 package com.example.foodrecommend.dingshi;
 
-import com.example.foodrecommend.beans.Merchant;
-import com.example.foodrecommend.beans.User;
+
 import com.example.foodrecommend.dto.MerchantBansDto;
 import com.example.foodrecommend.service.UserBansService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class taskReview {
+public class TaskReview {
 
     @Autowired
     private UserBansService userBansService;
@@ -27,9 +26,9 @@ public class taskReview {
     /**
      * 检查是否有用户针对单一商家好评频率过高并对其进行封禁
      */
-    @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
+    @Scheduled(cron = "0 0 * * * ?") // 每一小时执行一次
     public void checkUserCommentFrequency() {
-        List<User> suspiciousUsers = userBansService.commentFrequencyCommentBlock();
+        userBansService.commentFrequencyCommentBlock();
     }
 
     /**
@@ -43,9 +42,9 @@ public class taskReview {
     /**
      * 解禁用户
      */
-    @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
+    @Scheduled(cron = "0 0 * * * ?") // 每一小时执行一次
     public void checkForUnblockedUsers() {
-        List<User> userList = userBansService.unlockingUsers();
+        userBansService.unlockingUsers();
     }
 
 }
