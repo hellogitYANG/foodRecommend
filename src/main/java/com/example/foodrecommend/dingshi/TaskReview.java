@@ -22,7 +22,7 @@ public class TaskReview {
     /**
      * 检查是否有用户针对单一商家好评频率过高并对其进行封禁
      */
-    @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
+    @Scheduled(cron = "0 0 * * * ?") // 每一小时执行一次
     public void checkUserCommentFrequency() {
         userBansService.commentFrequencyCommentBlock();
     }
@@ -30,7 +30,7 @@ public class TaskReview {
     /**
      * 检查是否有商家好评频率过高且用户相似度过高，提示管理员进行处理
      */
-    @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
+    @Scheduled(cron = "0 0 * * * ?") // 每一小时执行一次
     public void checkMerchantCommentFrequency() {
         userBansService.commentFrequencyAndUserSimilarityCommentBlock();
     }
@@ -38,7 +38,7 @@ public class TaskReview {
     /**
      * 解禁用户
      */
-    @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
+    @Scheduled(cron = "0 0 * * * ?") // 每一小时执行一次
     public void checkForUnblockedUsers() {
         userBansService.unlockingUsers();
     }
