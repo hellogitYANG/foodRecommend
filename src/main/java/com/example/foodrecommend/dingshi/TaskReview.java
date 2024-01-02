@@ -1,14 +1,10 @@
 package com.example.foodrecommend.dingshi;
 
-import com.example.foodrecommend.beans.Merchant;
-import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.service.UserBansService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * 定时任务审查：
@@ -18,7 +14,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class taskReview {
+public class TaskReview {
 
     @Autowired
     private UserBansService userBansService;
@@ -28,7 +24,7 @@ public class taskReview {
      */
     @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
     public void checkUserCommentFrequency() {
-        List<User> suspiciousUsers = userBansService.commentFrequencyCommentBlock();
+        userBansService.commentFrequencyCommentBlock();
     }
 
     /**
@@ -36,7 +32,7 @@ public class taskReview {
      */
     @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
     public void checkMerchantCommentFrequency() {
-        List<Merchant> suspiciousMerchants = userBansService.commentFrequencyAndUserSimilarityCommentBlock();
+        userBansService.commentFrequencyAndUserSimilarityCommentBlock();
     }
 
     /**
@@ -44,7 +40,7 @@ public class taskReview {
      */
     @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
     public void checkForUnblockedUsers() {
-        List<User> userList = userBansService.unlockingUsers();
+        userBansService.unlockingUsers();
     }
 
 }
