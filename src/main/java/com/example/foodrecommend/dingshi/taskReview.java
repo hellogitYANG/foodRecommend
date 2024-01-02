@@ -2,6 +2,7 @@ package com.example.foodrecommend.dingshi;
 
 import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.beans.User;
+import com.example.foodrecommend.dto.MerchantBansDto;
 import com.example.foodrecommend.service.UserBansService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,9 @@ public class taskReview {
     /**
      * 检查是否有商家好评频率过高且用户相似度过高，提示管理员进行处理
      */
-    @Scheduled(cron = "0 0 0 * * ?") // 每一小时执行一次
+    @Scheduled(cron = "0 * * * * ?") // 每分钟执行一次
     public void checkMerchantCommentFrequency() {
-        List<Merchant> suspiciousMerchants = userBansService.commentFrequencyAndUserSimilarityCommentBlock();
+        List<MerchantBansDto> suspiciousMerchants = userBansService.commentFrequencyAndUserSimilarityCommentBlock();
     }
 
     /**

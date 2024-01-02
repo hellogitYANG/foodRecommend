@@ -38,6 +38,8 @@ public class OrderFatherServiceImpl extends ServiceImpl<OrderFatherMapper, Order
     @Autowired
     private UserMapper userMapper;
     @Autowired
+    private FoodStatsDictionaryMapper foodStatsDictionaryMapper;
+    @Autowired
     private FoodSkuMapper foodSkuMapper;
     @Override
     public Page<Map<String, Object>> selectOrderInfoPage(Page page, String openId) {
@@ -161,7 +163,15 @@ public class OrderFatherServiceImpl extends ServiceImpl<OrderFatherMapper, Order
             // 将统计结果放入 finalFoodTaste
             finalFoodTaste.put(tasteKey, mostFrequentTaste);
         }
-
+        //遍历用户口味，如果没有全部字段，设置为其他
+        List<Map<String, Object>> results = foodStatsDictionaryMapper.selectMaps(new QueryWrapper<FoodStatsDictionary>().select("stats_level").groupBy("stats_level"));
+        for (Map<String, Object> result : results) {
+            String statsLevel = (String)result.get("stats_level");
+            //如果不包含此类型，设置为此类型的其他
+            if(!finalFoodTaste.containsKey(statsLevel)){
+                finalFoodTaste.put(statsLevel,"其他"+"("+statsLevel+")");
+            }
+        }
         //转为json更新用户口味
         UpdateWrapper<User> wrapper = new UpdateWrapper<>();
         wrapper.eq("open_id",user.getOpenId());

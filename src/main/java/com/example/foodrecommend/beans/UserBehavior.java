@@ -19,7 +19,7 @@ public class UserBehavior implements Serializable {
      * 
      */
     @TableId(value = "id")
-    private Integer id;
+    private String id;
 
     /**
      * 用户openId

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.beans.UserBans;
+import com.example.foodrecommend.dto.MerchantBansDto;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface UserBansService extends IService<UserBans> {
      *
      * @return 可疑商家列表
      */
-    List<Merchant> commentFrequencyAndUserSimilarityCommentBlock();
+    List<MerchantBansDto> commentFrequencyAndUserSimilarityCommentBlock();
 
     /**
      * 解禁用户

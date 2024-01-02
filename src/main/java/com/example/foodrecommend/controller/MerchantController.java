@@ -128,5 +128,18 @@ public class MerchantController  {
     public R deleteById(@PathVariable Serializable id) {
         return success(this.merchantService.removeById(id));
     }
+
+    /**
+     * 删除数据
+
+     */
+    @ApiOperation("确认刷单并且扣分")
+    @GetMapping("/isbrushAndDelStar")
+    public R deleteById(String id,Integer isBrush,Double star) {
+        Merchant merchant = merchantService.getById(id);
+        merchant.setIsBrush(isBrush);
+        merchant.setStar(merchant.getStar()-star);
+        return success(merchantService.updateById(merchant));
+    }
 }
 

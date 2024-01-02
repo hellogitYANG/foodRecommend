@@ -1,11 +1,13 @@
 package com.example.foodrecommend.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.foodrecommend.beans.FoodComments;
 import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.beans.User;
 import com.example.foodrecommend.beans.UserBans;
+import com.example.foodrecommend.dto.MerchantBansDto;
 import com.example.foodrecommend.mapper.FoodCommentsMapper;
 import com.example.foodrecommend.mapper.MerchantMapper;
 import com.example.foodrecommend.mapper.UserBansMapper;
@@ -17,9 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -56,8 +56,8 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
     // 初始封禁次数
     private static final int NUMBER_OF_INITIAL_LOCKDOWNS = 1;
     // 商家评论数，用来判断是否超过这个次数，如果没超过就不用计算了
-    private static final int CURRENT_NUMBER_OF_MERCHANT_COMMENTS = 50;
-    // private static final int CURRENT_NUMBER_OF_MERCHANT_COMMENTS = 5; // 测试
+//    private static final int CURRENT_NUMBER_OF_MERCHANT_COMMENTS = 50;
+     private static final int CURRENT_NUMBER_OF_MERCHANT_COMMENTS = 5; // 测试
 
     /**
      * 检查是否有用户针对单一商家好评频率过高并对其进行封禁
@@ -151,14 +151,13 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
      *
      * @return 可疑商家列表
      */
-    public List<Merchant> commentFrequencyAndUserSimilarityCommentBlock() {
+    public List<MerchantBansDto> commentFrequencyAndUserSimilarityCommentBlock() {
         // 查询全部商家
         List<Merchant> merchants = merchantMapper.selectList(null);
         // 计算日期值
         LocalDateTime startOfDay = LocalDateTime.now().minusHours(1);
         LocalDateTime endOfDay = LocalDateTime.now();
-        // 1.得到好评率高的商家
-        List<Merchant> highGoodRateMerchants = new ArrayList<>();
+        List<MerchantBansDto> highGoodRateMerchants = new ArrayList<>();
         for (Merchant merchant : merchants) {
             // 获取商家的评价数
             Long commentsCount = foodCommentsMapper.selectCount(new LambdaQueryWrapper<FoodComments>()
@@ -178,7 +177,11 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
             // 判断是否大于阈值
             if (goodCommentRate >= MAX_POSITIVE_REVIEW_RATE) {
                 // 计入列表中
-                highGoodRateMerchants.add(merchant);
+                MerchantBansDto merchantBansDto = new MerchantBansDto();
+                BeanUtil.copyProperties(merchant,merchantBansDto);
+                merchantBansDto.setCommentNum(commentsCount);
+                merchantBansDto.setGoodReputation(goodCommentRate);
+                highGoodRateMerchants.add(merchantBansDto);
             }
         }
 
@@ -188,13 +191,22 @@ public class UserBansServiceImpl extends ServiceImpl<UserBansMapper, UserBans> i
         merchantsWithProblematicUserComments.forEach(merchant -> {
             highSimilarityMerchants.add(merchantMapper.selectById(merchant.getMerchantId()));
         });
-        // 3. 取交集,获取同时满足两条条件的商家
-        List<Merchant> suspiciousMerchants = highGoodRateMerchants.stream()
-                .filter(highSimilarityMerchants::contains)
+        // 先从highSimilarityMerchants中提取商家ID
+        Set<String> highSimilarityMerchantIds = highSimilarityMerchants.stream()
+                .map(Merchant::getId)
+                .collect(Collectors.toSet());
+
+        // 然后过滤highGoodRateMerchants，只保留那些ID在highSimilarityMerchantIds中的MerchantBansDto,取交集,获取同时满足两条条件的商家
+        List<MerchantBansDto> suspiciousMerchantsDto = highGoodRateMerchants.stream()
+                .filter(merchantDto -> highSimilarityMerchantIds.contains(merchantDto.getId())) // 假设MerchantBansDto也有getId()方法
                 .collect(Collectors.toList());
+        // 1.得到好评率高的商家
         // 打印处理结果
-        if (!suspiciousMerchants.isEmpty()) log.error("发现可疑商家，请及时处理：{}", suspiciousMerchants);
-        return suspiciousMerchants;
+        if (!suspiciousMerchantsDto.isEmpty()){
+            log.error("发现可疑商家，请及时处理：{}", suspiciousMerchantsDto);
+        }
+
+        return suspiciousMerchantsDto;
     }
 
     /**

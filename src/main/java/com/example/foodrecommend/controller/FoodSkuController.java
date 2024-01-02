@@ -67,8 +67,13 @@ public class FoodSkuController {
     @ApiOperation("分页菜品信息")
     @GetMapping
     public R selectAll(Page<FoodSku> page, FoodSku foodSku) {
+        String foodName = foodSku.getName();
+        foodSku.setName(null);
         QueryWrapper<FoodSku> foodSkuQueryWrapper = new QueryWrapper<>(foodSku);
         foodSkuQueryWrapper.orderByDesc("create_time");
+        if(foodName!=null){
+            foodSkuQueryWrapper.like("name",foodName);
+        }
         Page<FoodSku> page1 = this.foodSkuService.page(page, foodSkuQueryWrapper);
         List<Map<String, Object>> hashMaps = new ArrayList<>();
         for (FoodSku f : page1.getRecords()) {
@@ -133,11 +138,11 @@ public class FoodSkuController {
      * @param id 主键
      * @return 单条数据
      */
-    @ApiOperation("通过主键查询菜品单条数据，包含当前用户有无收藏")
+    @ApiOperation("通过主键查询菜品单条数据，包含当前用户有无收藏,顺便添加浏览记录")
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
-        User user = GetUserInfoByToken.parseToken(CheckTokenInterceptor.getToken());
-        return success(this.foodSkuService.getSkuInfo(user,id));
+        String openId = GetUserInfoByToken.parseToken(CheckTokenInterceptor.getToken()).getOpenId();
+        return success(this.foodSkuService.getSkuInfo(openId,id));
     }
 
     /**

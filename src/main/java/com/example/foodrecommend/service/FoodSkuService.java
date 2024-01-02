@@ -29,7 +29,7 @@ public interface FoodSkuService extends IService<FoodSku> {
 
     Page<FoodSku>  getLocationFood(Page<FoodSku> page,String openId);
 
-    Map<String,Object> getSkuInfo(User user, Serializable id);
+    Map<String,Object> getSkuInfo(String openId, Serializable id);
 
     int saveFoodSku(FoodSku foodSku);
 }

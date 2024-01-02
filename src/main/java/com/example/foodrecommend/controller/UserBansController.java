@@ -4,6 +4,7 @@ import com.example.foodrecommend.service.UserBansService;
 import com.example.foodrecommend.utils.R;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Api(value = "用户封禁表", tags = "用户封禁表")
 @RequestMapping("userBans")
+@CrossOrigin
 public class UserBansController {
 
     @Autowired

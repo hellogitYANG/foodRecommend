@@ -92,7 +92,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             }
         });
 
-        //常买三个
+        //常买两个
         QueryWrapper<Orders> q1 = new QueryWrapper<>();
         q1.eq("user_id",openId);
         q1.ge("create_time", oneWeekAgo).le("create_time", now);
@@ -109,7 +109,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             List<FoodSku> foodSkuList = itemCountMap.entrySet()
                     .stream()
                     .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                    .limit(3)
+                    .limit(2)
                     .map(entry -> foodSkuMapper.selectById(entry.getKey()))
                     .filter(Objects::nonNull) // 过滤掉空值，避免一些菜已经呗删除
                     .collect(Collectors.toList());
@@ -121,7 +121,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                         }
                     });
 
-        //最近(一天前到现在)浏览三个
+        //最近(一天前到现在)浏览两个
         List<FoodSku> liuLan = getLiuLan(openId,userBehaviorMapper, foodSkuMapper,shownFoodIds);
             //去重
             liuLan.forEach(foodSku -> {
@@ -131,7 +131,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
                 }
             });
 
-        //好评次数最多三个
+        //好评次数最多1个
         List<FoodSku> haoPing = getHaoPing(openId, foodCommentsMapper, foodSkuMapper,shownFoodIds);
             //去重
             haoPing.forEach(foodSku -> {
@@ -142,7 +142,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             });
 
 
-        //收藏菜品三个
+        //收藏菜品一个
         List<FoodSku> foodSkus = randomCollectFoodSku(openId, userMapper, foodSkuMapper,shownFoodIds);
         System.out.println(foodSkus);
             //去重
@@ -216,8 +216,8 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
 
 
         //如果推荐不足n(15个)个从口味余弦里面选
-        if (allFoodSku.size()<18){
-            int size=18-allFoodSku.size();
+        if (allFoodSku.size()<15){
+            int size=15-allFoodSku.size();
             List<FoodSku> newkouwei = kouWeiFood(openId, userMapper, foodSkuMapper,foodStatsDictionaryMapper,shownFoodIds,size);
             //补充size
             for (FoodSku foodSku : newkouwei) {
@@ -239,7 +239,8 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
 
         Page<FoodSkuRecommend> mapPage = new Page<>();
         mapPage.setRecords(allFoodSku);
-        mapPage.setTotal(allFoodSku.size());
+        mapPage.setTotal(foodSkuMapper.selectCount(null));
+        mapPage.setSize(allFoodSku.size());
         return mapPage;
     }
     public static List<FoodSku> kouWeiFood(String openId, BaseMapper<User> userMapper,BaseMapper<FoodSku> foodSkuMapper,BaseMapper<FoodStatsDictionary> foodStatsDictionaryMapper, List<String> shownFoodIds,int num) {
@@ -331,7 +332,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         //好评次数最多两个
         QueryWrapper<FoodComments> q2 = new QueryWrapper<>();
         q2.eq("user_id",openId);
-        q2.ge("comment_star",8);//评分大于或者等于8才算好评
+        q2.ge("comment_star",4);//评分大于或者等于7才算好评
         q2.ge("create_time", oneWeekAgo).le("create_time", now);
         if (shownFoodIds != null && !shownFoodIds.isEmpty()) {
             q2.notIn("food_sku_id", shownFoodIds);
@@ -345,7 +346,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
         List<FoodSku> foodSkuList = itemCountMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(2)
+                .limit(1)
                 .map(entry -> foodSkuMapper.selectById(entry.getKey()))
                 .filter(Objects::nonNull) // 过滤掉空值
                 .collect(Collectors.toList());
@@ -376,7 +377,7 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
             // 打乱列表
             Collections.shuffle(newfoodlist);
             // 取出前面两个元素
-            List<String> randomFoodSkus = newfoodlist.subList(0, Math.min(newfoodlist.size(), 2));
+            List<String> randomFoodSkus = newfoodlist.subList(0, Math.min(newfoodlist.size(), 1));
 
             List<FoodSku> foodSkuList = randomFoodSkus.stream()
                     .map(foodSkuId -> foodSkuMapper.selectById(foodSkuId))
@@ -414,7 +415,9 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
 
         // 根据权重随机选择三条记录
         List<MerchantRecharge> merchantRecharges = selectRandomByWeight(validRecharges, weightMap, 3);
-        System.out.println(merchantRecharges);
+        if (merchantRecharges.isEmpty()){
+            return new ArrayList<>();
+        }
         List<String> skuIds = merchantRecharges.stream().map(MerchantRecharge::getFoodSkuId).collect(Collectors.toList());
         return foodSkuMapper.selectList(new QueryWrapper<FoodSku>().in("id",skuIds));
     }
@@ -554,7 +557,15 @@ public class FoodSkuServiceImpl extends ServiceImpl<FoodSkuMapper, FoodSku>
     }
 
     @Override
-    public Map<String, Object> getSkuInfo(User user, Serializable id) {
+    public Map<String, Object> getSkuInfo(String openId, Serializable id) {
+        //给当前用户添加浏览记录
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", openId));
+        UserBehavior userBehavior = new UserBehavior();
+        userBehavior.setFoodSkuId((String) id);
+        userBehavior.setUserId(user.getOpenId());
+        userBehavior.setMerchantId(foodSkuMapper.selectById(id).getMerchantId());
+        userBehavior.setBehavior(0);//浏览0
+        userBehaviorMapper.insert(userBehavior);
         //查出用户收藏
         User openUser = userMapper.selectOne(new QueryWrapper<User>().eq("open_id", user.getOpenId()));
         //查出菜品信息

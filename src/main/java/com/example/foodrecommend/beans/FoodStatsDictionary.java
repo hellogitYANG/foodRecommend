@@ -34,6 +34,12 @@ public class FoodStatsDictionary implements Serializable {
     private String statsLevel;
 
     /**
+     * 权重
+     */
+    @TableField(value = "weight")
+    private double weight;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time")

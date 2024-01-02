@@ -6,8 +6,10 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.foodrecommend.beans.FoodSku;
 import com.example.foodrecommend.beans.FoodStatsDictionary;
+import com.example.foodrecommend.beans.Merchant;
 import com.example.foodrecommend.mapper.FoodSkuMapper;
 import com.example.foodrecommend.mapper.FoodStatsDictionaryMapper;
+import com.example.foodrecommend.mapper.MerchantMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,15 +18,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SpringBootTest
 class FoodRecommendApplicationTests {
     @Autowired
     FoodSkuMapper foodSkuMapper;
+
+    @Autowired
+    MerchantMapper merchantMapper;
     @Autowired
     FoodStatsDictionaryMapper foodStatsDictionaryMapper;
     @Test
@@ -48,6 +50,22 @@ class FoodRecommendApplicationTests {
             skus.setFoodStats(parseStats);
             foodSkuMapper.updateById(skus);
         }
+    }
+
+    @Test
+    void contextLoads2()  {
+        //搜索所有菜品
+        List<Merchant> merchants = merchantMapper.selectList(null);
+
+        for(Merchant m : merchants) {
+            String foodImg = m.getMerchantImg();
+
+            String updatedUrl = foodImg.replace("s4xxacvii.hn-bkt.clouddn.com", "s6mrs5dkj.sabkt.gdipper.com");
+
+            m.setMerchantImg(updatedUrl);
+            merchantMapper.updateById(m);
+        }
+
     }
 
 }
